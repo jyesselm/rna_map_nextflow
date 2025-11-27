@@ -1,0 +1,17 @@
+name: rna_map_nextflow
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>=3.10
+  - openjdk=11  # Java 11 for Nextflow (supports Java 8-18)
+  - nextflow>=23.0.0
+  - bowtie2
+  - fastqc
+  - trim-galore
+  - cutadapt
+  - pip
+  # Note: rna_map should be installed separately in editable mode:
+  # cd .. && pip install -e .
+

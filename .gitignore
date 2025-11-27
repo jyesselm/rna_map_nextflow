@@ -1,0 +1,79 @@
+*.py[cod]
+.pytest_cache
+.DS_Store
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Complexity
+output/*.html
+output/*/index.html
+
+# Test/comparison outputs
+comparison_outputs/
+example_output/
+simple_output/
+*test_results*/
+nextflow/test_results*/
+nextflow/*test_results*/
+
+# Nextflow outputs
+nextflow/reports/
+nextflow/.nextflow/
+nextflow/work/
+nextflow/*.html
+nextflow/*.txt
+nextflow/*.log
+nextflow/test_*.html
+nextflow/test_*.txt
+nextflow/test_*.log
+
+# Build artifacts
+htmlcov/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+
+# Sphinx
+docs/_build
+
+# pycharm
+*.idea
+
+# Temporary files
+*.swp
+*.swo
+*~
+.is_paired.txt
