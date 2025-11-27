@@ -63,3 +63,51 @@ jobs:
           which fastqc  || (echo "fastqc missing"  && exit 1)
           which cutadapt || (echo "cutadapt missing" && exit 1)
           which trim_galore || (echo "trim_galore missing" && exit 1)
+
+  nextflow-test:
+    name: Nextflow Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up micromamba
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          micromamba-version: "latest"
+          environment-file: nextflow/environment.yml
+          environment-name: rna_map_nextflow
+          cache-environment: true
+          cache-downloads: true
+          create-args: >-
+            --channel conda-forge
+            --channel bioconda
+            --strict-channel-priority
+
+      - name: Install rna_map package
+        shell: bash -l {0}
+        run: |
+          pip install -e .
+
+      - name: Verify Nextflow and Java
+        shell: bash -l {0}
+        run: |
+          which nextflow || (echo "nextflow missing" && exit 1)
+          which java || (echo "java missing" && exit 1)
+          nextflow -version
+          java -version
+
+      - name: Run Nextflow test
+        shell: bash -l {0}
+        run: |
+          cd nextflow
+          chmod +x test_local_simple.sh
+          ./test_local_simple.sh
+
+      - name: Run Nextflow workflow test
+        shell: bash -l {0}
+        run: |
+          cd nextflow
+          chmod +x test_local.sh
+          ./test_local.sh

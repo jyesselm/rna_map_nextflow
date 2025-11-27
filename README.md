@@ -3,7 +3,7 @@
 
 # RNA MAP
 
-[![Docker Linux Build](https://github.com/YesselmanLab/rna_map/actions/workflows/docker_linux_build.yml/badge.svg)](https://github.com/YesselmanLab/rna_map/actions/workflows/docker_linux_build.yml)
+[![CI](https://github.com/YesselmanLab/rna_map/actions/workflows/ci.yml/badge.svg)](https://github.com/YesselmanLab/rna_map/actions/workflows/ci.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![linting: flake8](https://img.shields.io/badge/linting-flake8-greenyellow)](https://github.com/PyCQA/flake8)
 [![PYPI package](https://badge.fury.io/py/rna-map.png)](http://badge.fury.io/py/rna-map)
@@ -605,10 +605,24 @@ pip install -e ".[dev]"
 # Run tests
 pytest
 
+# Run Nextflow tests
+cd nextflow
+./test_local_simple.sh  # Quick syntax validation
+./test_local.sh         # Full workflow test
+
 # Run linting
 black rna_map/
 flake8 rna_map/
 ```
+
+### Continuous Integration
+
+The CI pipeline automatically runs:
+- Python unit tests on Linux and macOS
+- Nextflow workflow validation and execution tests
+- Code quality checks
+
+All tests must pass before merging pull requests.
 
 
 ### Code Style
