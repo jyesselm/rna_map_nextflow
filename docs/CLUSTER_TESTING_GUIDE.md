@@ -1,394 +1,625 @@
-# Cluster Testing Guide for Nextflow Workflow
+# Cluster Testing Guide - RNA MAP Nextflow
+
+This guide provides comprehensive instructions for testing the RNA MAP Nextflow workflow on a cluster environment (SLURM).
+
+## Table of Contents
+
+1. [Prerequisites](#prerequisites)
+2. [Initial Setup](#initial-setup)
+3. [Testing Levels](#testing-levels)
+4. [Step-by-Step Testing](#step-by-step-testing)
+5. [Verifying Results](#verifying-results)
+6. [Troubleshooting](#troubleshooting)
+7. [Advanced Testing](#advanced-testing)
 
 ## Prerequisites
 
-### 1. Cluster Access
-- SSH access to cluster
-- SLURM account and partition access
-- Sufficient quota for test runs
+### Required Software
 
-### 2. Software on Cluster
-- Nextflow installed (or use conda environment)
-- Java 8-18 (included in conda environment)
-- Access to shared storage (for input/output files)
+- **Conda/Mamba** - For environment management
+- **Java 8-18** - Required by Nextflow
+- **Nextflow 23.0+** - Workflow engine
+- **Bioinformatics tools**:
+  - Bowtie2 2.2.9+
+  - FastQC 0.11.9+
+  - Trim Galore 0.6.6+
+  - Cutadapt 1.18+
 
-### 3. Local Setup
-- Nextflow workflow tested locally
-- Conda environment created and validated
-- Test data prepared
+### Cluster Requirements
 
-## Pre-Cluster Checklist
+- SLURM job scheduler
+- Access to compute nodes
+- Sufficient storage for test data and results
+- Network access (if using shared storage)
 
-### ✅ Local Validation Complete
-```bash
-cd nextflow/
-./test_local_conda.sh
-# Verify: All processes complete successfully
-# Verify: Output files match baseline
-```
+## Initial Setup
 
-### ✅ Environment Ready
-```bash
-# Create conda environment (if not done)
-./setup_conda.sh
-
-# Verify Nextflow works
-conda activate rna_map_nextflow
-nextflow -version
-```
-
-### ✅ Test Data Prepared
-- Small test dataset ready
-- Sample CSV file created
-- Input files accessible from cluster
-
-## Cluster Setup
-
-### Step 1: Transfer Files to Cluster
+### 1. Clone Repository
 
 ```bash
-# From local machine
-rsync -avz nextflow/ user@cluster:/path/to/rna_map/nextflow/
-rsync -avz test/resources/ user@cluster:/path/to/rna_map/test/resources/
+# On login node or compute node with git access
+cd /path/to/your/workspace
+git clone https://github.com/jyesselm/rna_map_nextflow
+cd rna_map_nextflow
 ```
 
-### Step 2: Create Conda Environment on Cluster
+### 2. Create Conda Environment
 
 ```bash
-# SSH to cluster
-ssh user@cluster
+# Create environment from environment.yml
+conda env create -f environment.yml
 
-# Navigate to project
-cd /path/to/rna_map/nextflow/
+# Activate environment
+conda activate rna-map-nextflow
 
-# Create environment (if conda available)
-./setup_conda.sh
-
-# OR use module system (if available)
-module load nextflow
-module load java/11
+# Verify installation
+which nextflow
+which java
+which bowtie2
+which fastqc
+which trim_galore
 ```
 
-### Step 3: Configure for Your Cluster
+### 3. Set PYTHONPATH
 
-Edit `nextflow.config`:
+**CRITICAL**: You must set PYTHONPATH for the workflow to work!
 
-```groovy
-profiles {
-    slurm {
-        process.executor = 'slurm'
-        process.clusterOptions = { 
-            def opts = []
-            if (params.account) {
-                opts << "--account=${params.account}"
-            }
-            opts << "--partition=${params.partition}"
-            opts << "--time=${params.max_time}"
-            opts << "--mem=${params.max_memory}"
-            return opts.join(' ')
-        }
-        
-        // Module loading (if needed)
-        process.beforeScript = '''
-            module load bowtie2
-            module load fastqc
-            module load trim_galore
-        '''
-    }
-}
+```bash
+# Set PYTHONPATH (add to your ~/.bashrc or ~/.zshrc for persistence)
+export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+
+# Verify it's set
+echo $PYTHONPATH
+# Should show: /path/to/rna_map_nextflow/lib
+
+# Test Python imports
+python -c "from lib.bit_vectors import generate_bit_vectors; print('✅ lib imports work')"
 ```
 
-### Step 4: Set Resource Requirements
+### 4. Verify Test Data
 
-Update process labels in `main.nf`:
+```bash
+# Check test data exists
+ls -lh test/resources/case_1/
 
-```groovy
-process RNA_MAP_MAPPING {
-    label 'process_high'  // Uses: cpus=16, memory=32GB, time=4h
-    // ...
-}
-
-process RNA_MAP_BIT_VECTORS {
-    label 'process_high'  // Uses: cpus=4, memory=16GB, time=2h
-    // ...
-}
+# Should see:
+# - test.fasta
+# - test_mate1.fastq
+# - test_mate2.fastq
+# - test.csv
 ```
 
-Configure in `nextflow.config`:
+## Testing Levels
 
-```groovy
-process {
-    withLabel: 'process_high' {
-        cpus = 16
-        memory = '32 GB'
-        time = '4h'
-    }
-}
-```
+We recommend testing in this order:
 
-## Testing on Cluster
+1. **Level 1: Syntax Validation** - Quick check that workflow files are valid
+2. **Level 2: Dry Run** - Test workflow without executing
+3. **Level 3: Single Sample Test** - Run one sample with minimal resources
+4. **Level 4: Full Test** - Complete workflow with all steps
+5. **Level 5: Parallel Test** - Test FASTQ splitting and parallel processing
 
-### Test 1: Single Sample (Dry Run)
+## Step-by-Step Testing
+
+### Level 1: Syntax Validation
+
+**Purpose**: Verify Nextflow can parse all workflow files
 
 ```bash
 # Activate environment
-conda activate rna_map_nextflow
+conda activate rna-map-nextflow
+export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
 
-# Dry run (validates workflow without executing)
+# Run syntax validation script
+chmod +x test/nextflow/test_local_simple.sh
+./test/nextflow/test_local_simple.sh
+```
+
+**Expected Output**:
+```
+==========================================
+Validating Nextflow Workflow Syntax
+==========================================
+
+Checking workflow files...
+✅ Workflow files found
+
+Checking test data...
+✅ test.fasta
+✅ test_mate1.fastq
+✅ test_mate2.fastq
+✅ test.csv
+
+==========================================
+Workflow files are valid!
+==========================================
+```
+
+**If this fails**: Check that all files are in the correct locations and Nextflow is installed.
+
+### Level 2: Dry Run
+
+**Purpose**: Test workflow configuration without executing
+
+```bash
+# Test with --help to see parameters
+nextflow run main.nf --help
+
+# Dry run (validates configuration)
 nextflow run main.nf \
     -profile slurm \
-    --fasta /path/to/test.fasta \
-    --fastq1 /path/to/test_mate1.fastq \
-    --fastq2 /path/to/test_mate2.fastq \
-    --dot_bracket /path/to/test.csv \
-    --output_dir /path/to/results \
-    --account your_account \
+    --fasta test/resources/case_1/test.fasta \
+    --fastq1 test/resources/case_1/test_mate1.fastq \
+    --fastq2 test/resources/case_1/test_mate2.fastq \
+    --dot_bracket test/resources/case_1/test.csv \
+    --output_dir test_results_dry \
+    -with-dag test_dag_dry.html \
+    -resume
+```
+
+**Expected Output**: Nextflow should show the workflow DAG and exit without errors.
+
+### Level 3: Single Sample Test (Minimal)
+
+**Purpose**: Run one sample with minimal resources to verify basic functionality
+
+```bash
+# Create test script
+cat > test_cluster_minimal.sh << 'EOF'
+#!/bin/bash
+#SBATCH --job-name=rna_map_test
+#SBATCH --time=2:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --mem=16G
+#SBATCH --partition=normal
+#SBATCH --output=test_%j.out
+#SBATCH --error=test_%j.err
+
+# Load modules if needed (customize for your cluster)
+# module load conda
+# module load java
+
+# Activate conda environment
+source $(conda info --base)/etc/profile.d/conda.sh
+conda activate rna-map-nextflow
+
+# Set PYTHONPATH
+export PYTHONPATH="${SLURM_SUBMIT_DIR}/lib:${PYTHONPATH}"
+
+# Change to submission directory
+cd ${SLURM_SUBMIT_DIR}
+
+# Run Nextflow
+nextflow run main.nf \
+    -profile slurm \
+    --account $(groups | cut -d' ' -f1) \
     --partition normal \
-    -with-dag dag.html \
-    -with-report report.html \
-    -with-trace trace.txt
-```
+    --fasta test/resources/case_1/test.fasta \
+    --fastq1 test/resources/case_1/test_mate1.fastq \
+    --fastq2 test/resources/case_1/test_mate2.fastq \
+    --dot_bracket test/resources/case_1/test.csv \
+    --output_dir test_results_minimal \
+    --skip_fastqc \
+    --skip_trim_galore \
+    --max_cpus 4 \
+    -with-report test_report_minimal.html \
+    -with-trace test_trace_minimal.txt \
+    -with-dag test_dag_minimal.html
 
-### Test 2: Single Sample (Actual Run)
+echo "Test completed. Check test_results_minimal/ for outputs."
+EOF
 
-```bash
-# Submit to cluster
-nextflow run main.nf \
-    -profile slurm \
-    --fasta /path/to/test.fasta \
-    --fastq1 /path/to/test_mate1.fastq \
-    --fastq2 /path/to/test_mate2.fastq \
-    --dot_bracket /path/to/test.csv \
-    --output_dir /path/to/results \
-    --account your_account \
-    --partition normal \
-    --max_cpus 16
-```
+chmod +x test_cluster_minimal.sh
 
-### Test 3: Multiple Samples
+# Submit job
+sbatch test_cluster_minimal.sh
 
-Create `samples.csv`:
-
-```csv
-sample_id,fasta,fastq1,fastq2,dot_bracket
-sample1,/path/to/ref1.fasta,/path/to/r1_1.fastq,/path/to/r1_2.fastq,/path/to/struct1.csv
-sample2,/path/to/ref2.fasta,/path/to/r2_1.fastq,/path/to/r2_2.fastq,/path/to/struct2.csv
-```
-
-Run:
-
-```bash
-nextflow run main.nf \
-    -profile slurm \
-    --samples_csv samples.csv \
-    --output_dir /path/to/results \
-    --account your_account \
-    --partition normal
-```
-
-## Monitoring
-
-### Check Job Status
-
-```bash
-# Nextflow status
-nextflow log
-
-# SLURM jobs
+# Monitor job
 squeue -u $USER
 
-# Nextflow work directory
-ls -lh $SCRATCH/nextflow-work/
+# Check output when job completes
+cat test_*.out
 ```
 
-### View Logs
+**Expected Output**:
+- Job completes successfully
+- `test_results_minimal/` directory created
+- Output files present in results directory
+
+### Level 4: Full Test
+
+**Purpose**: Run complete workflow with all steps (FastQC, Trim Galore, alignment, bit vectors)
 
 ```bash
-# Nextflow execution log
-cat .nextflow.log
+# Create full test script
+cat > test_cluster_full.sh << 'EOF'
+#!/bin/bash
+#SBATCH --job-name=rna_map_full
+#SBATCH --time=4:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=8
+#SBATCH --mem=32G
+#SBATCH --partition=normal
+#SBATCH --output=test_full_%j.out
+#SBATCH --error=test_full_%j.err
 
-# Process logs
-find work -name ".command.err" -exec tail -20 {} \;
-find work -name ".command.out" -exec tail -20 {} \;
+# Load modules if needed
+# module load conda
+# module load java
+
+# Activate conda environment
+source $(conda info --base)/etc/profile.d/conda.sh
+conda activate rna-map-nextflow
+
+# Set PYTHONPATH
+export PYTHONPATH="${SLURM_SUBMIT_DIR}/lib:${PYTHONPATH}"
+
+# Change to submission directory
+cd ${SLURM_SUBMIT_DIR}
+
+# Run Nextflow with all steps
+nextflow run main.nf \
+    -profile slurm \
+    --account $(groups | cut -d' ' -f1) \
+    --partition normal \
+    --fasta test/resources/case_1/test.fasta \
+    --fastq1 test/resources/case_1/test_mate1.fastq \
+    --fastq2 test/resources/case_1/test_mate2.fastq \
+    --dot_bracket test/resources/case_1/test.csv \
+    --output_dir test_results_full \
+    --max_cpus 8 \
+    -with-report test_report_full.html \
+    -with-trace test_trace_full.txt \
+    -with-dag test_dag_full.html
+
+echo "Full test completed. Check test_results_full/ for outputs."
+EOF
+
+chmod +x test_cluster_full.sh
+sbatch test_cluster_full.sh
 ```
 
-### Check Output
+### Level 5: Parallel Processing Test
+
+**Purpose**: Test FASTQ splitting and parallel processing
 
 ```bash
-# Verify results
-ls -lh results/*/BitVector_Files/summary.csv
-head results/*/BitVector_Files/summary.csv
+# Use the provided parallel test script
+chmod +x test/nextflow/test_parallel.sh
+
+# Modify for cluster use
+cat > test_cluster_parallel.sh << 'EOF'
+#!/bin/bash
+#SBATCH --job-name=rna_map_parallel
+#SBATCH --time=6:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=16
+#SBATCH --mem=64G
+#SBATCH --partition=normal
+#SBATCH --output=test_parallel_%j.out
+#SBATCH --error=test_parallel_%j.err
+
+source $(conda info --base)/etc/profile.d/conda.sh
+conda activate rna-map-nextflow
+export PYTHONPATH="${SLURM_SUBMIT_DIR}/lib:${PYTHONPATH}"
+cd ${SLURM_SUBMIT_DIR}
+
+nextflow run main.nf \
+    -profile slurm \
+    --account $(groups | cut -d' ' -f1) \
+    --partition normal \
+    --fasta test/resources/case_1/test.fasta \
+    --fastq1 test/resources/case_1/test_mate1.fastq \
+    --fastq2 test/resources/case_1/test_mate2.fastq \
+    --dot_bracket test/resources/case_1/test.csv \
+    --output_dir test_results_parallel \
+    --split_fastq \
+    --chunk_size 1000 \
+    --max_cpus 16 \
+    -with-report test_report_parallel.html \
+    -with-trace test_trace_parallel.txt \
+    -with-dag test_dag_parallel.html
+EOF
+
+chmod +x test_cluster_parallel.sh
+sbatch test_cluster_parallel.sh
+```
+
+## Verifying Results
+
+### 1. Check Job Status
+
+```bash
+# Check if job completed
+squeue -u $USER
+
+# Check job exit status
+sacct -j <JOB_ID> --format=JobID,JobName,State,ExitCode
+
+# View job output
+cat test_*.out
+cat test_*.err
+```
+
+### 2. Verify Output Structure
+
+```bash
+# Check output directory structure
+tree test_results_full/ -L 3
+
+# Should see:
+# test_results_full/
+# └── <sample_id>/
+#     ├── BitVector_Files/
+#     │   ├── summary.csv
+#     │   ├── mutation_histos.p
+#     │   ├── mutation_histos.json
+#     │   └── <sequence>_bitvectors.txt
+#     └── Mapping_Files/
+#         └── aligned.sam
+```
+
+### 3. Check Key Output Files
+
+```bash
+RESULTS_DIR="test_results_full/<sample_id>"
+
+# Check summary CSV exists and has data
+head -5 ${RESULTS_DIR}/BitVector_Files/summary.csv
+
+# Check mutation histograms exist
+ls -lh ${RESULTS_DIR}/BitVector_Files/mutation_histos.*
+
+# Check SAM file exists and has alignments
+head -20 ${RESULTS_DIR}/Mapping_Files/aligned.sam
+
+# Check bit vector files
+ls -lh ${RESULTS_DIR}/BitVector_Files/*_bitvectors.txt
+```
+
+### 4. Verify Nextflow Reports
+
+```bash
+# Open HTML reports (download to local machine if needed)
+# - test_report_full.html - Execution report
+# - test_dag_full.html - Workflow DAG visualization
+# - test_trace_full.txt - Detailed execution trace
+
+# Check trace file
+head -20 test_trace_full.txt
+```
+
+### 5. Validate Python Output
+
+```bash
+# Test that Python can read the output
+python << 'PYTHON'
+import pickle
+import json
+from pathlib import Path
+
+results_dir = Path("test_results_full/<sample_id>/BitVector_Files")
+
+# Check pickle file
+with open(results_dir / "mutation_histos.p", "rb") as f:
+    histos = pickle.load(f)
+    print(f"✅ Pickle file loaded: {len(histos)} sequences")
+
+# Check JSON file
+with open(results_dir / "mutation_histos.json", "r") as f:
+    histos_json = json.load(f)
+    print(f"✅ JSON file loaded: {len(histos_json)} sequences")
+
+# Check summary CSV
+import pandas as pd
+df = pd.read_csv(results_dir / "summary.csv")
+print(f"✅ Summary CSV loaded: {len(df)} rows")
+print(df.head())
+PYTHON
 ```
 
 ## Troubleshooting
 
-### Issue: Jobs Not Starting
+### Issue: "Module not found: lib"
 
-**Check:**
-- SLURM account and partition correct
-- Resource requirements not too high
-- Module loading working
-- File paths accessible
-
-**Solution:**
+**Solution**:
 ```bash
-# Test SLURM access
-sbatch --account=your_account --partition=normal --time=1:00:00 --wrap="echo test"
+# Ensure PYTHONPATH is set
+export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
 
-# Check module availability
-module avail bowtie2
-module load bowtie2
+# Verify it's set in your job script
+echo $PYTHONPATH
+
+# Test import
+python -c "from lib.bit_vectors import generate_bit_vectors; print('OK')"
+```
+
+### Issue: "Java version error"
+
+**Solution**:
+```bash
+# Check Java version
+java -version
+
+# Should be Java 8-18
+# If not, install in conda environment:
+conda install openjdk=11 -c conda-forge
+```
+
+### Issue: "Nextflow not found"
+
+**Solution**:
+```bash
+# Check if Nextflow is in environment
+which nextflow
+
+# If not, install:
+conda install nextflow -c bioconda
+
+# Or verify environment is activated
+conda activate rna-map-nextflow
+```
+
+### Issue: "Tool not found" (bowtie2, fastqc, etc.)
+
+**Solution**:
+```bash
+# Check if tools are in environment
 which bowtie2
+which fastqc
+which trim_galore
+
+# If not, install:
+conda install -c bioconda bowtie2 fastqc trim-galore cutadapt
 ```
 
-### Issue: File Not Found Errors
+### Issue: "SLURM account/partition error"
 
-**Check:**
-- Input files accessible from compute nodes
-- Paths are absolute (not relative)
-- Files in shared storage (not local disk)
-
-**Solution:**
+**Solution**:
 ```bash
-# Use absolute paths
---fasta /shared/data/ref.fasta
+# Check your account
+sacctmgr show user $USER
 
-# Not relative paths
---fasta ./ref.fasta  # ❌ May not work on compute nodes
+# Check available partitions
+sinfo
+
+# Update job script with correct account/partition
+# --account your_account
+# --partition your_partition
 ```
 
-### Issue: Out of Memory
+### Issue: "Permission denied" on scripts
 
-**Solution:**
-```groovy
-// Increase memory in nextflow.config
-process {
-    withLabel: 'process_high' {
-        memory = '64 GB'  // Increase from 32 GB
-    }
+**Solution**:
+```bash
+# Make scripts executable
+chmod +x test/nextflow/*.sh
+chmod +x lint.sh fmt.sh
+```
+
+### Issue: "Workflow fails with Python error"
+
+**Solution**:
+```bash
+# Check Nextflow logs
+cat .nextflow.log
+
+# Check process logs in work directory
+ls -la work/*/
+
+# Verify PYTHONPATH in process environment
+# Add to nextflow.config process.beforeScript:
+# export PYTHONPATH="${baseDir}/lib:${PYTHONPATH}"
+```
+
+### Issue: "Out of memory" or "Time limit exceeded"
+
+**Solution**:
+```bash
+# Increase resources in job script:
+#SBATCH --mem=64G
+#SBATCH --time=8:00:00
+#SBATCH --ntasks-per-node=16
+
+# Or adjust Nextflow params:
+--max_cpus 16
+--max_memory "64 GB"
+```
+
+## Advanced Testing
+
+### Test Multiple Samples
+
+```bash
+# Create samples CSV
+cat > test_samples.csv << 'EOF'
+sample_id,fasta,fastq1,fastq2,dot_bracket
+test1,test/resources/case_1/test.fasta,test/resources/case_1/test_mate1.fastq,test/resources/case_1/test_mate2.fastq,test/resources/case_1/test.csv
+test2,test/resources/case_1/test.fasta,test/resources/case_1/test_mate1.fastq,test/resources/case_1/test_mate2.fastq,test/resources/case_1/test.csv
+EOF
+
+# Run with samples CSV
+nextflow run main.nf \
+    -profile slurm \
+    --samples_csv test_samples.csv \
+    --output_dir test_results_multi \
+    --max_cpus 16
+```
+
+### Test with Custom Configuration
+
+```bash
+# Create custom config
+cat > my_config.config << 'EOF'
+params {
+    max_cpus = 32
+    max_memory = "128 GB"
+    bt2_alignment_args = "--very-sensitive-local;--no-unal"
 }
+EOF
+
+# Run with custom config
+nextflow run main.nf \
+    -c my_config.config \
+    -profile slurm \
+    --fasta test/resources/case_1/test.fasta \
+    --fastq1 test/resources/case_1/test_mate1.fastq \
+    --output_dir test_results_custom
 ```
 
-### Issue: Timeout Errors
-
-**Solution:**
-```groovy
-// Increase time limit
-process {
-    withLabel: 'process_high' {
-        time = '8h'  // Increase from 4h
-    }
-}
-```
-
-### Issue: Too Many Files (5M Limit)
-
-**Check file count:**
-```bash
-find $SCRATCH/nextflow-work -type f | wc -l
-```
-
-**Solution:**
-- Use scratch space for work directory
-- Clean up old work directories: `nextflow clean -f`
-- Archive results regularly
-- Use `--resume` to avoid recomputation
-
-## Performance Optimization
-
-### 1. Use Scratch Space
-
-```groovy
-// In nextflow.config
-workDir = System.getenv('SCRATCH') ? "${System.getenv('SCRATCH')}/nextflow-work" : "${System.getenv('HOME')}/nextflow-work"
-```
-
-### 2. Parallel Execution
-
-Nextflow automatically parallelizes independent samples. No configuration needed!
-
-### 3. Resume Failed Runs
+### Test Resume Functionality
 
 ```bash
-# If workflow fails, resume from last successful step
-nextflow run main.nf -resume [previous run name]
+# Run workflow
+nextflow run main.nf -profile slurm --fasta ... --output_dir results
+
+# If it fails, resume from checkpoint
+nextflow run main.nf -profile slurm --fasta ... --output_dir results -resume
 ```
 
-### 4. Resource Tuning
+## Testing Checklist
 
-Adjust based on your cluster's resources:
+Use this checklist to verify your installation:
 
-```groovy
-process {
-    withLabel: 'process_high' {
-        cpus = { Math.min(task.cpus ?: 16, 32) }  // Use up to 32 CPUs
-        memory = { task.attempt == 1 ? '32 GB' : '64 GB' }  // Retry with more memory
-    }
-}
-```
+- [ ] Repository cloned successfully
+- [ ] Conda environment created and activated
+- [ ] All tools installed (nextflow, java, bowtie2, fastqc, trim_galore)
+- [ ] PYTHONPATH set correctly
+- [ ] Python imports work (`from lib.bit_vectors import ...`)
+- [ ] Syntax validation passes (`test_local_simple.sh`)
+- [ ] Dry run completes without errors
+- [ ] Minimal test job completes successfully
+- [ ] Output files created in results directory
+- [ ] Summary CSV has data
+- [ ] Mutation histograms generated
+- [ ] SAM file contains alignments
+- [ ] Nextflow reports generated
+- [ ] Full test completes successfully
+- [ ] Parallel test completes successfully
 
-## Validation
+## Getting Help
 
-### Compare Cluster Results to Local
+If you encounter issues:
 
-```bash
-# On cluster
-head results/sample1/BitVector_Files/summary.csv
+1. **Check logs**: `cat test_*.out` and `cat test_*.err`
+2. **Check Nextflow logs**: `cat .nextflow.log`
+3. **Check process logs**: `ls -la work/*/`
+4. **Verify environment**: Run `conda list` to see installed packages
+5. **Test imports**: Run Python import tests manually
+6. **Check SLURM**: Verify account, partition, and resource limits
 
-# On local (if you have same test data)
-head test_results/sample_test.fasta/BitVector_Files/summary.csv
+## Next Steps
 
-# Should match!
-```
+Once testing is complete:
 
-### Check File Counts
+1. **Production Setup**: Configure for your production data
+2. **Resource Tuning**: Adjust CPU/memory based on your data size
+3. **Storage**: Set up appropriate storage for results
+4. **Monitoring**: Set up job monitoring and notifications
+5. **Documentation**: Document cluster-specific configurations
 
-```bash
-# Monitor file creation
-find results -type f | wc -l
-find $SCRATCH/nextflow-work -type f | wc -l
+---
 
-# Should stay well under 5M limit
-```
-
-## Production Checklist
-
-Before running production jobs:
-
-- [ ] Tested with small dataset
-- [ ] Validated output matches local results
-- [ ] Resource requirements tuned
-- [ ] File paths verified (absolute paths)
-- [ ] Module loading configured
-- [ ] Scratch space configured
-- [ ] Output directory has sufficient space
-- [ ] SLURM account/partition correct
-- [ ] Monitoring setup (logs, reports)
-
-## Quick Reference
-
-```bash
-# Single sample
-nextflow run main.nf -profile slurm --fasta X --fastq1 Y --output_dir Z
-
-# Multiple samples
-nextflow run main.nf -profile slurm --samples_csv samples.csv --output_dir results
-
-# Resume failed run
-nextflow run main.nf -resume [run_name]
-
-# Clean work directory
-nextflow clean -f
-
-# View reports
-open report.html
-open dag.html
-```
-
-## Support
-
-- Nextflow docs: https://www.nextflow.io/docs/latest/
-- SLURM docs: Check your cluster's documentation
-- Workflow logs: `.nextflow.log`
-- Process logs: `work/*/.command.err` and `.command.out`
-
+**Last Updated**: 2025-11-27
+**Version**: 1.0.0

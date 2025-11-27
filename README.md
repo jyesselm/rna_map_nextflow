@@ -14,15 +14,14 @@
 - [Software Requirements](#software-requirements)
 - [Installation](#installation)
   - [Using Conda (Recommended)](#using-conda-recommended)
-  - [Using Docker](#using-docker)
-  - [From Source](#from-source)
 - [Quick Start](#quick-start)
+- [Testing](#testing)
+  - [Local Testing](#local-testing)
+  - [Cluster Testing](#cluster-testing)
 - [Usage Examples](#usage-examples)
   - [Basic Usage](#basic-usage)
   - [Advanced Usage](#advanced-usage)
-  - [Working with Large Datasets](#working-with-large-datasets)
-- [Scalable Pipeline for Multiple Samples](#scalable-pipeline-for-multiple-samples)
-- [Command Line Reference](#command-line-reference)
+- [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
 - [Development](#development)
 - [Citation](#citation)
@@ -73,38 +72,24 @@ RNA mutational profiling (MaP) is a powerful technique that uses dimethyl sulfat
 
 ### Using Conda (Recommended)
 
-The easiest way to install RNA MAP is using the provided `environment.yml` file, which automatically installs all dependencies:
+The easiest way to set up RNA MAP Nextflow is using the provided `environment.yml` file:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YesselmanLab/rna_map
-cd rna_map
+git clone https://github.com/jyesselm/rna_map_nextflow
+cd rna_map_nextflow
 
 # Create environment from environment.yml
 conda env create -f environment.yml
 
 # Activate the environment
-conda activate rna-map
+conda activate rna-map-nextflow
 
-# Install the package in development mode
-pip install -e .
+# Set PYTHONPATH to include lib/ directory
+export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
 ```
 
-Alternatively, you can install from PyPI:
-
-```bash
-# Create a new conda environment
-conda create -n rna-map python=3.11
-
-# Activate the environment
-conda activate rna-map
-
-# Install bioinformatics tools
-conda install -c bioconda bowtie2 fastqc cutadapt trim-galore
-
-# Install RNA MAP
-pip install rna-map
-```
+The `lib/` directory contains the minimal Python code needed by the Nextflow workflow. No additional Python package installation is required.
 
 ### Using Docker
 
@@ -144,20 +129,82 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
-After installation, the `rna-map` command-line tool will be available in your environment.
+See [QUICKSTART.md](QUICKSTART.md) for a quick reference guide.
 
 ### Basic Analysis
 
 ```bash
-# Single-end sequencing
-rna-map -fa reference.fasta -fq1 reads.fastq
+# Set PYTHONPATH (required!)
+export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
 
-# Paired-end sequencing
-rna-map -fa reference.fasta -fq1 reads_R1.fastq -fq2 reads_R2.fastq
-
-# With secondary structure information
-rna-map -fa reference.fasta -fq1 reads.fastq --dot-bracket structures.csv
+# Single sample
+nextflow run main.nf \
+    -profile local \
+    --fasta reference.fasta \
+    --fastq1 reads_R1.fastq \
+    --fastq2 reads_R2.fastq \
+    --dot_bracket structures.csv \
+    --output_dir results
 ```
+
+## Testing
+
+### 🧪 Comprehensive Testing Documentation
+
+**For cluster testing, see the complete testing documentation:**
+
+- **[📘 Testing Index](docs/TESTING_INDEX.md)** - Navigate all testing docs
+- **[📗 Cluster Testing Guide](docs/CLUSTER_TESTING_GUIDE.md)** - Complete step-by-step guide (625 lines)
+- **[📕 Quick Reference](docs/CLUSTER_TESTING_QUICKREF.md)** - Essential commands and fixes
+- **[📋 Testing Checklist](docs/TESTING_CHECKLIST.md)** - Systematic testing checklist
+
+### Quick Start Testing
+
+**On Cluster (Recommended):**
+```bash
+# 1. Run automated comprehensive test
+./test/nextflow/test_cluster.sh
+
+# 2. Or submit as SLURM job
+sbatch test/nextflow/test_cluster.sh
+```
+
+**Local Testing:**
+```bash
+# Quick syntax validation
+./test/nextflow/test_local_simple.sh
+
+# Full workflow test
+./test/nextflow/test_local.sh
+```
+
+### Testing Documentation Overview
+
+The testing documentation package includes:
+
+1. **CLUSTER_TESTING_GUIDE.md** (625 lines)
+   - 5 testing levels (syntax → parallel)
+   - SLURM job script templates
+   - Troubleshooting guide (10+ common issues)
+   - Result verification procedures
+
+2. **CLUSTER_TESTING_QUICKREF.md** (87 lines)
+   - One-command setup
+   - Essential commands
+   - Common issues & fixes table
+
+3. **TESTING_CHECKLIST.md** (166 lines)
+   - Pre-testing setup checklist
+   - Installation verification
+   - Test execution steps
+   - Output verification
+
+4. **test_cluster.sh** - Automated test suite
+   - Tests environment, tools, configuration
+   - Can run interactively or as SLURM job
+   - Comprehensive validation
+
+**See [docs/TESTING_INDEX.md](docs/TESTING_INDEX.md) for complete navigation guide.**
 
 ## Usage Examples
 
@@ -220,71 +267,61 @@ rna-map -fa large_dataset.fasta -fq1 reads.fastq --summary-output-only
 rna-map -fa large_dataset.fasta -fq1 reads.fastq --skip-bit-vector
 ```
 
-### Scalable Pipeline for Multiple Samples
+### Nextflow Workflow (Recommended)
 
-For processing multiple samples efficiently (especially on HPC), RNA MAP uses **Nextflow** for workflow orchestration, providing automatic parallelization and cluster support:
+This repository is structured as a **Nextflow-first** package. The Nextflow workflow provides scalable, reproducible processing of RNA MAP analyses.
 
-#### Installation
-
-```bash
-# Nextflow is included in the conda environment
-# Or install separately: conda install -c bioconda nextflow
-```
-
-#### Demultiplex FASTQ Files
-
-If you have multiplexed FASTQ files that need to be split by barcode:
+#### Quick Start
 
 ```bash
-# Demultiplex paired-end FASTQ files
-rna-map-pipeline demultiplex R1.fastq R2.fastq barcodes.csv --output-dir demultiplexed
+# 1. Setup environment
+conda env create -f environment.yml
+conda activate rna-map-nextflow
 
-# This creates a samples.csv file with all demultiplexed samples
+# 2. Set PYTHONPATH to include lib/
+export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+
+# 3. Run single sample
+nextflow run main.nf \
+    -profile local \
+    --fasta reference.fasta \
+    --fastq1 reads_R1.fastq \
+    --fastq2 reads_R2.fastq \
+    --dot_bracket structure.csv \
+    --output_dir results
+
+# 4. Run multiple samples
+# Create samples.csv:
+# sample_id,fasta,fastq1,fastq2,dot_bracket
+# sample1,ref1.fasta,s1_R1.fastq,s1_R2.fastq,struct1.csv
+# sample2,ref2.fasta,s2_R1.fastq,s2_R2.fastq,struct2.csv
+
+nextflow run main.nf \
+    -profile slurm \
+    --samples_csv samples.csv \
+    --output_dir results
 ```
 
-#### Process Multiple Samples in Parallel
+#### Configuration Profiles
 
-Process multiple samples in parallel with automatic parallelization (works on both local machines and HPC clusters):
+- **`local`**: For local execution (uses all available CPUs)
+- **`slurm`**: For SLURM cluster execution (default)
 
 ```bash
-# Process samples in parallel (auto-detects local/SLURM)
-rna-map-pipeline run samples.csv --output-dir results
+# Local execution
+nextflow run main.nf -profile local --fasta ref.fasta --fastq1 reads.fastq
 
-# Local execution with specific profile
-rna-map-pipeline run samples.csv --profile local --output-dir results
-
-# HPC cluster execution (SLURM)
-rna-map-pipeline run samples.csv --profile slurm --account myaccount --partition normal --max-cpus 16
-
-# For very large FASTQ files, split and process in parallel
-rna-map-pipeline run samples.csv --split-fastq --chunk-size 1000000
+# SLURM cluster execution
+nextflow run main.nf -profile slurm --account myaccount --partition normal --fasta ref.fasta --fastq1 reads.fastq
 ```
 
-#### Full Pipeline: Demultiplex + RNA MAP
+#### Key Features
 
-Run the complete workflow in one command:
-
-```bash
-# Demultiplex and process all samples in parallel
-rna-map-pipeline full R1.fastq R2.fastq barcodes.csv --output-dir results
-```
-
-#### Sample CSV Format
-
-The `samples.csv` file should have the following columns:
-
-```csv
-sample_id,fasta,fastq1,fastq2,dot_bracket,barcode
-sample1,ref1.fasta,sample1_R1.fastq,sample1_R2.fastq,ref1.csv,AAAA
-sample2,ref2.fasta,sample2_R1.fastq,sample2_R2.fastq,,TTTT
-```
-
-**Key Features:**
-- **Nextflow Orchestration**: Industry-standard workflow management with automatic parallelization
-- **Auto-Detection**: Automatically detects local vs SLURM cluster environment
-- **Scalable**: Process hundreds of samples efficiently on local machines or HPC clusters
-- **Robust**: Built-in error handling, resume capability, and result tracking
-- **Reproducible**: Workflows are versioned and can be easily shared
+- **Standard Nextflow Structure**: Follows Nextflow best practices
+- **Minimal Python Library**: Only Python code needed by the workflow (in `lib/`)
+- **Scalable**: Automatic parallelization on local machines or HPC clusters
+- **Reproducible**: Conda environment with all dependencies
+- **Cluster-Ready**: Pre-configured for SLURM with resource management
 
 #### Detailed Usage Examples
 
@@ -602,25 +639,29 @@ conda activate rna-map
 # Install in development mode
 pip install -e ".[dev]"
 
-# Run tests
-pytest
+# Set PYTHONPATH for lib/
+export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+
+# Run Python tests (if you have pytest installed)
+# pytest test/  # Optional - test lib/ modules
 
 # Run Nextflow tests
-cd nextflow
-./test_local_simple.sh  # Quick syntax validation
-./test_local.sh         # Full workflow test
+./test/nextflow/test_local_simple.sh  # Quick syntax validation
+./test/nextflow/test_local.sh         # Full workflow test
 
-# Run linting
-black rna_map/
-flake8 rna_map/
+# Run Nextflow linting
+./lint.sh
+
+# Format Nextflow code
+./fmt.sh
 ```
 
 ### Continuous Integration
 
 The CI pipeline automatically runs:
-- Python unit tests on Linux and macOS
-- Nextflow workflow validation and execution tests
-- Code quality checks
+- Python library import tests (verifies lib/ modules work)
+- Nextflow workflow validation and syntax checks
+- Bioinformatics tool verification
 
 All tests must pass before merging pull requests.
 
@@ -628,10 +669,10 @@ All tests must pass before merging pull requests.
 ### Code Style
 
 This project uses:
-- **Black** for code formatting
-- **Flake8** for linting
-- **MyPy** for type checking
-- **Pytest** for testing
+- **Nextflow lint/fmt** for Nextflow code (Nextflow 25.04+)
+- **Ruff** for Python code formatting and linting (in lib/)
+- **MyPy** for type checking (optional, for lib/)
+- **Pytest** for testing (optional, for lib/)
 
 ## Citation
 

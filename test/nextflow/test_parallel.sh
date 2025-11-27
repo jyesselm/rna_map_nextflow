@@ -10,14 +10,14 @@ echo ""
 
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 # Test data paths
 FASTA="${PROJECT_ROOT}/test/resources/case_1/test.fasta"
 FASTQ1="${PROJECT_ROOT}/test/resources/case_1/test_mate1.fastq"
 FASTQ2="${PROJECT_ROOT}/test/resources/case_1/test_mate2.fastq"
 DOT_BRACKET="${PROJECT_ROOT}/test/resources/case_1/test.csv"
-OUTPUT_DIR="${SCRIPT_DIR}/test_results_parallel"
+OUTPUT_DIR="${PROJECT_ROOT}/test_results_parallel"
 
 echo "Test Data:"
 echo "  FASTA: ${FASTA}"
@@ -123,7 +123,7 @@ if [ "$JAVA_MAJOR_VERSION" -gt 18 ] || [ "$JAVA_MAJOR_VERSION" -lt 8 ]; then
                 echo "  ${INSTALL_CMD}"
                 echo ""
                 echo "Or create/update the rna_map_nextflow environment:"
-                echo "  cd nextflow && ${ENV_CMD}"
+                echo "  ${ENV_CMD}"
                 exit 1
             fi
         else
@@ -141,7 +141,7 @@ if [ "$JAVA_MAJOR_VERSION" -gt 18 ] || [ "$JAVA_MAJOR_VERSION" -lt 8 ]; then
             echo "  ${INSTALL_CMD}"
             echo ""
             echo "Or create/update the rna_map_nextflow environment:"
-            echo "  cd nextflow && ${ENV_CMD}"
+            echo "  ${ENV_CMD}"
             exit 1
         fi
     else
@@ -193,7 +193,10 @@ echo "Running Nextflow workflow with parallel splitting..."
 echo ""
 
 # Run Nextflow with local profile and split_fastq enabled
-cd "$SCRIPT_DIR"
+cd "$PROJECT_ROOT"
+
+# Set PYTHONPATH to include lib/
+export PYTHONPATH="${PROJECT_ROOT}/lib:${PYTHONPATH}"
 
 # Note: This requires Java 8-18. If you get a Java version error, please:
 # 1. Activate the rna_map_nextflow conda environment: conda activate rna_map_nextflow
@@ -221,9 +224,9 @@ echo "=========================================="
 echo ""
 echo "Results:"
 echo "  Output directory: ${OUTPUT_DIR}"
-echo "  Report: ${SCRIPT_DIR}/test_report_parallel.html"
-echo "  Trace: ${SCRIPT_DIR}/test_trace_parallel.txt"
-echo "  DAG: ${SCRIPT_DIR}/test_dag_parallel.html"
+echo "  Report: ${PROJECT_ROOT}/test_report_parallel.html"
+echo "  Trace: ${PROJECT_ROOT}/test_trace_parallel.txt"
+echo "  DAG: ${PROJECT_ROOT}/test_dag_parallel.html"
 echo ""
 echo "Checking outputs..."
 echo ""

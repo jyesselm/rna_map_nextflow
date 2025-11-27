@@ -5,28 +5,28 @@
 set -e
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 echo "=========================================="
 echo "Validating Nextflow Workflow Syntax"
 echo "=========================================="
 echo ""
 
-cd "$SCRIPT_DIR"
+cd "$PROJECT_ROOT"
 
 # Check if Nextflow can at least parse the workflow
 echo "Checking workflow files..."
 echo ""
 
 # Check main.nf exists
-if [ ! -f "main.nf" ]; then
-    echo "ERROR: main.nf not found"
+if [ ! -f "$PROJECT_ROOT/main.nf" ]; then
+    echo "ERROR: main.nf not found at $PROJECT_ROOT/main.nf"
     exit 1
 fi
 
 # Check nextflow.config exists
-if [ ! -f "nextflow.config" ]; then
-    echo "ERROR: nextflow.config not found"
+if [ ! -f "$PROJECT_ROOT/nextflow.config" ]; then
+    echo "ERROR: nextflow.config not found at $PROJECT_ROOT/nextflow.config"
     exit 1
 fi
 
@@ -57,8 +57,11 @@ echo ""
 echo "To run the workflow, you need:"
 echo "  1. Java 8-18 installed"
 echo "  2. Nextflow installed"
-echo "  3. rna_map Python package installed"
+echo "  3. lib/ Python modules (set PYTHONPATH to include lib/)"
 echo ""
-echo "See INSTALL.md for installation instructions"
+echo "Setup:"
+echo "  conda env create -f environment.yml"
+echo "  conda activate rna-map-nextflow"
+echo "  export PYTHONPATH=\"\${PWD}/lib:\${PYTHONPATH}\""
 echo ""
 

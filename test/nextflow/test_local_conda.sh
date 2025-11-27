@@ -4,7 +4,7 @@
 set -e
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 echo "=========================================="
 echo "Testing RNA MAP Nextflow Workflow (Conda)"
@@ -25,8 +25,7 @@ if ! $CONDA_CMD env list | grep -q "rna_map_nextflow"; then
     echo "ERROR: Conda environment 'rna_map_nextflow' not found"
     echo ""
     echo "Create it with:"
-    echo "  cd nextflow/"
-    echo "  ./setup_conda.sh"
+    echo "  conda env create -f environment.yml"
     exit 1
 fi
 
@@ -35,7 +34,7 @@ FASTA="${PROJECT_ROOT}/test/resources/case_1/test.fasta"
 FASTQ1="${PROJECT_ROOT}/test/resources/case_1/test_mate1.fastq"
 FASTQ2="${PROJECT_ROOT}/test/resources/case_1/test_mate2.fastq"
 DOT_BRACKET="${PROJECT_ROOT}/test/resources/case_1/test.csv"
-OUTPUT_DIR="${SCRIPT_DIR}/test_results"
+OUTPUT_DIR="${PROJECT_ROOT}/test_results"
 
 echo "Test Data:"
 echo "  FASTA: ${FASTA}"
@@ -67,16 +66,19 @@ echo ""
 # Verify tools in environment
 echo "Checking tools..."
 $CONDA_CMD run -n rna_map_nextflow nextflow -version 2>&1 | head -1
-$CONDA_CMD run -n rna_map_nextflow python -c "import rna_map; print(f'rna_map: {rna_map.__version__}')" 2>&1
+$CONDA_CMD run -n rna_map_nextflow python -c "import sys; sys.path.insert(0, '${PROJECT_ROOT}/lib'); from lib import __version__; print(f'lib: {__version__}')" 2>&1
 echo ""
 
 echo "Running Nextflow workflow..."
 echo ""
 
 # Run Nextflow with local profile using conda environment
-cd "$SCRIPT_DIR"
+cd "$PROJECT_ROOT"
 
-$CONDA_CMD run -n rna_map_nextflow nextflow run main.nf \
+# Set PYTHONPATH to include lib/
+export PYTHONPATH="${PROJECT_ROOT}/lib:${PYTHONPATH}"
+
+$CONDA_CMD run -n rna_map_nextflow bash -c "export PYTHONPATH='${PROJECT_ROOT}/lib:\${PYTHONPATH}' && nextflow run main.nf \
     -profile local \
     --fasta "$FASTA" \
     --fastq1 "$FASTQ1" \
@@ -88,7 +90,7 @@ $CONDA_CMD run -n rna_map_nextflow nextflow run main.nf \
     --skip_trim_galore \
     -with-report test_report.html \
     -with-trace test_trace.txt \
-    -with-dag test_dag.html
+    -with-dag test_dag.html"
 
 echo ""
 echo "=========================================="
@@ -97,9 +99,9 @@ echo "=========================================="
 echo ""
 echo "Results:"
 echo "  Output directory: ${OUTPUT_DIR}"
-echo "  Report: ${SCRIPT_DIR}/test_report.html"
-echo "  Trace: ${SCRIPT_DIR}/test_trace.txt"
-echo "  DAG: ${SCRIPT_DIR}/test_dag.html"
+echo "  Report: ${PROJECT_ROOT}/test_report.html"
+echo "  Trace: ${PROJECT_ROOT}/test_trace.txt"
+echo "  DAG: ${PROJECT_ROOT}/test_dag.html"
 echo ""
 echo "To view results:"
 echo "  ls -lh ${OUTPUT_DIR}/*/"

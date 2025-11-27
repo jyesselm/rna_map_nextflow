@@ -1,12 +1,16 @@
-name: rna-map
+name: rna-map-nextflow
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
   # Core Python
-  - python=3.11
+  - python>=3.10
   - pip
+
+  # Nextflow and Java
+  - openjdk=11  # Java 11 for Nextflow (supports Java 8-18)
+  - nextflow>=23.0.0
 
   # CLI tools (Bioconda/conda-forge provide recent builds)
   - bowtie2        # aligner
@@ -14,20 +18,12 @@ dependencies:
   - cutadapt       # adapter/quality trimming
   - trim-galore    # wrapper around cutadapt (Perl script; conda handles Perl dep)
 
-  # Python deps you listed
-  - cython
-  - colorlog
-  - click
-  - future
-  - plotly
-  - matplotlib
-  - pandas
-  - pytest
+  # Python deps for lib/ (minimal set needed by Nextflow)
+  - pandas>=1.5
+  - numpy>=1.21
+  - tabulate>=0.9
+  - pyyaml>=6.0
 
-  # Nice to have utilities (optional; remove if you prefer minimal)
-  - unzip
-  - curl
-  - wget
-
-  - pip:
-    - kaleido
+  # Note: lib/ Python package should be installed separately:
+  #   export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+  #   Or: pip install -e . (if setup.py is configured for lib/)

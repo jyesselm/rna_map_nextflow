@@ -3,9 +3,9 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "rna_map"
-version = "0.4.1"
-description = "rapid analysis of RNA mutational profiling (MaP) experiments."
+name = "rna-map-nextflow"
+version = "1.0.0"
+description = "RNA MAP Nextflow workflow - Nextflow-first package for RNA mutational profiling (MaP) analysis"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
@@ -15,7 +15,7 @@ authors = [
 maintainers = [
   { name = "Joe Yesselman", email = "jyesselm@unl.edu" }
 ]
-keywords = ["rna_map", "RNA", "mutational profiling", "MaP", "bioinformatics"]
+keywords = ["rna_map", "RNA", "mutational profiling", "MaP", "nextflow", "bioinformatics", "workflow"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
@@ -33,14 +33,8 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-  "click>=8",
-  "cloup>=2.0",
-  "colorlog>=6.0",
-  "jsonschema>=4.0",
-  "matplotlib>=3.5",
   "numpy>=1.21",
   "pandas>=1.5",
-  "plotly>=5.0",
   "pyyaml>=6.0",
   "tabulate>=0.9",
 ]
@@ -71,15 +65,14 @@ Repository = "https://github.com/YesselmanLab/rna_map"
 Documentation = "https://github.com/YesselmanLab/rna_map#readme"
 Issues = "https://github.com/YesselmanLab/rna_map/issues"
 
-[project.scripts]
-rna-map = "rna_map.cli:cli"
-rna-map-pipeline = "rna_map.cli_pipeline:pipeline"
+# No CLI entry points - this is a Nextflow-first package
+# The lib/ directory contains minimal Python code for Nextflow workflow
 
 [tool.setuptools.packages.find]
-include = ["rna_map*"]
+include = ["lib*"]
 
 [tool.setuptools.package-data]
-rna_map = ["py.typed", "resources/*", "resources/**/*"]
+lib = ["**/*.py"]
 
 # Ruff configuration (replaces black, isort, flake8)
 [tool.ruff]
@@ -123,7 +116,7 @@ extend-ignore = [
 max-complexity = 10
 
 [tool.ruff.lint.isort]
-known-first-party = ["rna_map"]
+known-first-party = ["lib"]
 force-single-line = false
 split-on-trailing-comma = true
 combine-as-imports = true
@@ -155,7 +148,7 @@ line-ending = "auto"
 # MyPy configuration (less strict than before)
 [tool.mypy]
 python_version = "3.10"
-packages = ["rna_map"]
+packages = ["lib"]
 strict = false
 warn_unused_configs = true
 # Allow functions without type annotations (less aggressive)
@@ -248,7 +241,7 @@ exclude = [
 # Pytest configuration
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = "-ra -q --strict-markers --strict-config --cov=rna_map --cov-report=term-missing --cov-report=html"
+addopts = "-ra -q --strict-markers --strict-config --cov=lib --cov-report=term-missing --cov-report=html"
 testpaths = ["test"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
@@ -262,7 +255,7 @@ markers = [
 
 # Coverage configuration
 [tool.coverage.run]
-source = ["rna_map"]
+source = ["lib"]
 omit = [
     "*/tests/*",
     "*/test_*",

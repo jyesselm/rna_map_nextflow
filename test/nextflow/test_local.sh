@@ -10,14 +10,14 @@ echo ""
 
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 # Test data paths
 FASTA="${PROJECT_ROOT}/test/resources/case_1/test.fasta"
 FASTQ1="${PROJECT_ROOT}/test/resources/case_1/test_mate1.fastq"
 FASTQ2="${PROJECT_ROOT}/test/resources/case_1/test_mate2.fastq"
 DOT_BRACKET="${PROJECT_ROOT}/test/resources/case_1/test.csv"
-OUTPUT_DIR="${SCRIPT_DIR}/test_results"
+OUTPUT_DIR="${PROJECT_ROOT}/test_results"
 
 echo "Test Data:"
 echo "  FASTA: ${FASTA}"
@@ -104,7 +104,7 @@ echo "Running Nextflow workflow..."
 echo ""
 
 # Run Nextflow with local profile
-cd "$SCRIPT_DIR"
+cd "$PROJECT_ROOT"
 
 nextflow run main.nf \
     -profile local \
@@ -126,9 +126,9 @@ echo "=========================================="
 echo ""
 echo "Results:"
 echo "  Output directory: ${OUTPUT_DIR}"
-echo "  Report: ${SCRIPT_DIR}/test_report.html"
-echo "  Trace: ${SCRIPT_DIR}/test_trace.txt"
-echo "  DAG: ${SCRIPT_DIR}/test_dag.html"
+echo "  Report: ${PROJECT_ROOT}/test_report.html"
+echo "  Trace: ${PROJECT_ROOT}/test_trace.txt"
+echo "  DAG: ${PROJECT_ROOT}/test_dag.html"
 echo ""
 echo "To view results:"
 echo "  ls -lh ${OUTPUT_DIR}/*/"
