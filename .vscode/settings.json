@@ -1,3 +1,4 @@
 {
-    "nextflow.telemetry.enabled": true
+    "nextflow.telemetry.enabled": true,
+    "cmake.sourceDirectory": "/Users/jyesselman2/Library/CloudStorage/Dropbox/2_code/nextflow/rna_map_netflow/cpp"
 }

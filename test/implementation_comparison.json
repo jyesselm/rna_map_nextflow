@@ -1,0 +1,90 @@
+{
+  "results": {
+    "python_native": {
+      "total_reads": 2357,
+      "aligned_reads": 2357,
+      "mutation_counts": {
+        "0": 1158,
+        "2": 274,
+        "1": 845,
+        "3": 71,
+        "4": 8,
+        "5": 1
+      }
+    },
+    "cpp": {
+      "total_reads": 2357,
+      "aligned_reads": 2357,
+      "mutation_counts": {
+        "0": 1158,
+        "2": 274,
+        "1": 845,
+        "3": 71,
+        "4": 8,
+        "5": 1
+      }
+    },
+    "pysam": {
+      "total_reads": 2357,
+      "aligned_reads": 2357,
+      "mutation_counts": {
+        "0": 1158,
+        "2": 274,
+        "1": 845,
+        "3": 71,
+        "4": 8,
+        "5": 1
+      }
+    }
+  },
+  "comparison": {
+    "implementations": [
+      "python_native",
+      "cpp",
+      "pysam"
+    ],
+    "total_reads": {
+      "python_native": 2357,
+      "cpp": 2357,
+      "pysam": 2357
+    },
+    "aligned_reads": {
+      "python_native": 2357,
+      "cpp": 2357,
+      "pysam": 2357
+    },
+    "mutation_distribution": {
+      "0": {
+        "python_native": 1158,
+        "cpp": 1158,
+        "pysam": 1158
+      },
+      "1": {
+        "python_native": 845,
+        "cpp": 845,
+        "pysam": 845
+      },
+      "2": {
+        "python_native": 274,
+        "cpp": 274,
+        "pysam": 274
+      },
+      "3": {
+        "python_native": 71,
+        "cpp": 71,
+        "pysam": 71
+      },
+      "4": {
+        "python_native": 8,
+        "cpp": 8,
+        "pysam": 8
+      },
+      "5": {
+        "python_native": 1,
+        "cpp": 1,
+        "pysam": 1
+      }
+    },
+    "differences": []
+  }
+}

@@ -62,6 +62,12 @@ nextflow/test_*.html
 nextflow/test_*.txt
 nextflow/test_*.log
 
+# Test trace and report files
+test_trace*.txt
+test_*.html
+test_report*.html
+test_dag*.html
+
 # Build artifacts
 htmlcov/
 *.egg-info/
@@ -80,3 +86,23 @@ docs/_build
 *.swo
 *~
 .is_paired.txt
+=
+
+# Optimization result directories (large outputs)
+*_optimization/
+full_optimization/
+my_optimization/
+*_optimization_test/
+optimization_*_test/
+
+# Test output directories
+test_output_*/
+case*_test_results/
+case*_optimization_test/
+case*_baseline_test_results/
+
+# Build artifacts (additional)
+bit_vector_cpp.*.so
+cpp/**/*.so
+cpp/build/
+cpp/**/build/

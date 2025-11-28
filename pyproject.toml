@@ -43,6 +43,10 @@ dependencies = [
 cpp = [
     "pybind11>=2.10",
 ]
+optuna = [
+    "optuna>=3.0",
+    "plotly>=5.0",  # For Optuna visualizations
+]
 pysam = [
     "pysam>=0.21",
 ]

@@ -1,0 +1,51 @@
+{
+  "best_by_quality_score": {
+    "combination_id": 4,
+    "parameters": {
+      "local": true,
+      "no_unal": true,
+      "no_discordant": true,
+      "no_mixed": true,
+      "seed_length": 10,
+      "seed_mismatches": 1,
+      "maxins": 1000,
+      "mismatch_penalty": "4,2"
+    },
+    "bowtie2_args": "--local --no-unal --no-discordant --no-mixed -L 10 -N 1 -X 1000 --mp 4,2",
+    "metrics": {
+      "signal": 4670,
+      "noise": -2170,
+      "signal_to_noise": Infinity,
+      "alignment_rate": 0.9344,
+      "high_quality_rate": 1.868,
+      "quality_score": 0.8852090582191781
+    }
+  },
+  "best_by_signal_to_noise": {
+    "combination_id": 1,
+    "parameters": {
+      "local": true,
+      "no_unal": true,
+      "no_discordant": true,
+      "no_mixed": true,
+      "seed_length": 10,
+      "seed_mismatches": 0,
+      "maxins": 200
+    },
+    "bowtie2_args": "--local --no-unal --no-discordant --no-mixed -L 10 -X 200"
+  },
+  "best_by_alignment_rate": {
+    "combination_id": 4,
+    "parameters": {
+      "local": true,
+      "no_unal": true,
+      "no_discordant": true,
+      "no_mixed": true,
+      "seed_length": 10,
+      "seed_mismatches": 1,
+      "maxins": 1000,
+      "mismatch_penalty": "4,2"
+    },
+    "bowtie2_args": "--local --no-unal --no-discordant --no-mixed -L 10 -N 1 -X 1000 --mp 4,2"
+  }
+}

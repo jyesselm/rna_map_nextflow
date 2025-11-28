@@ -1,0 +1,10 @@
+*.so
+*.dylib
+*.pyd
+*.o
+*.a
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+

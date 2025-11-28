@@ -1,0 +1,19 @@
+{
+  "num_bit_vectors": 25318,
+  "text": {
+    "write_time_seconds": 1.1673579216003418,
+    "file_size_bytes": 4426769,
+    "throughput_bv_per_sec": 21688.29245214811
+  },
+  "json": {
+    "write_time_seconds": 2.1380090713500977,
+    "file_size_bytes": 3725885,
+    "throughput_bv_per_sec": 11841.858081552637
+  },
+  "speedup": {
+    "json_vs_text": 0.5460023239579547
+  },
+  "size_ratio": {
+    "text_vs_json": 1.1881120861218206
+  }
+}
