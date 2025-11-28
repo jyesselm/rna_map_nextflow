@@ -195,8 +195,7 @@ echo ""
 # Run Nextflow with local profile and split_fastq enabled
 cd "$PROJECT_ROOT"
 
-# Set PYTHONPATH to include lib/
-export PYTHONPATH="${PROJECT_ROOT}/lib:${PYTHONPATH}"
+# No PYTHONPATH needed - packages are installed in conda environment via .pth file
 
 # Note: This requires Java 8-18. If you get a Java version error, please:
 # 1. Activate the rna_map_nextflow conda environment: conda activate rna_map_nextflow

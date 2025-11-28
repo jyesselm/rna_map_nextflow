@@ -75,10 +75,9 @@ echo ""
 # Run Nextflow with local profile using conda environment
 cd "$PROJECT_ROOT"
 
-# Set PYTHONPATH to include lib/
-export PYTHONPATH="${PROJECT_ROOT}/lib:${PYTHONPATH}"
+# No PYTHONPATH needed - packages are installed in conda environment via .pth file
 
-$CONDA_CMD run -n rna_map_nextflow bash -c "export PYTHONPATH='${PROJECT_ROOT}/lib:\${PYTHONPATH}' && nextflow run main.nf \
+$CONDA_CMD run -n rna_map_nextflow bash -c "nextflow run main.nf \
     -profile local \
     --fasta "$FASTA" \
     --fastq1 "$FASTQ1" \

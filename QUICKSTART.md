@@ -11,8 +11,9 @@ cd rna_map_nextflow
 conda env create -f environment.yml
 conda activate rna-map-nextflow
 
-# 3. Set PYTHONPATH (required!)
-export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+# 3. Setup Python packages (required!)
+# This creates a .pth file so packages are available without PYTHONPATH
+./setup_env.sh
 ```
 
 ## Basic Usage

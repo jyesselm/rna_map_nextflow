@@ -94,14 +94,11 @@ done
 
 echo ""
 
-# Test 2: PYTHONPATH Check
+# Test 2: Python Package Check
 echo "=========================================="
-echo "Test 2: PYTHONPATH Check"
+echo "Test 2: Python Package Check"
 echo "=========================================="
 echo ""
-
-export PYTHONPATH="${PROJECT_ROOT}/lib:${PYTHONPATH}"
-echo "PYTHONPATH: $PYTHONPATH"
 
 if [ -d "${PROJECT_ROOT}/lib" ]; then
     echo "✅ lib/ directory exists"
@@ -110,7 +107,7 @@ else
     exit 1
 fi
 
-# Test Python imports
+# Test Python imports (should work without PYTHONPATH via .pth file)
 echo ""
 echo "Testing Python imports..."
 python -c "from lib.bit_vectors import generate_bit_vectors; print('✅ lib.bit_vectors')" || exit 1

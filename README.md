@@ -85,11 +85,11 @@ conda env create -f environment.yml
 # Activate the environment
 conda activate rna-map-nextflow
 
-# Set PYTHONPATH to include lib/ directory
-export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+# Setup Python packages (creates .pth file so packages are available)
+./setup_env.sh
 ```
 
-The `lib/` directory contains the minimal Python code needed by the Nextflow workflow. No additional Python package installation is required.
+The `lib/` directory contains the minimal Python code needed by the Nextflow workflow. The `setup_env.sh` script creates a `.pth` file in the conda environment so that `lib/` and `rna_map/` packages are automatically available without needing to set PYTHONPATH.
 
 ### Using Docker
 
@@ -134,10 +134,7 @@ See [QUICKSTART.md](QUICKSTART.md) for a quick reference guide.
 ### Basic Analysis
 
 ```bash
-# Set PYTHONPATH (required!)
-export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
-
-# Single sample
+# Single sample (after running ./setup_env.sh)
 nextflow run main.nf \
     -profile local \
     --fasta reference.fasta \
@@ -278,8 +275,8 @@ This repository is structured as a **Nextflow-first** package. The Nextflow work
 conda env create -f environment.yml
 conda activate rna-map-nextflow
 
-# 2. Set PYTHONPATH to include lib/
-export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+# 2. Setup Python packages
+./setup_env.sh
 
 # 3. Run single sample
 nextflow run main.nf \
@@ -639,8 +636,8 @@ conda activate rna-map
 # Install in development mode
 pip install -e ".[dev]"
 
-# Set PYTHONPATH for lib/
-export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+# Setup Python packages (if not already done)
+./setup_env.sh
 
 # Run Python tests (if you have pytest installed)
 # pytest test/  # Optional - test lib/ modules

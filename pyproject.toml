@@ -69,7 +69,7 @@ Issues = "https://github.com/YesselmanLab/rna_map/issues"
 # The lib/ directory contains minimal Python code for Nextflow workflow
 
 [tool.setuptools.packages.find]
-include = ["lib*"]
+include = ["lib*", "rna_map*"]
 
 [tool.setuptools.package-data]
 lib = ["**/*.py"]

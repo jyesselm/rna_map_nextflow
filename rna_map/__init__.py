@@ -16,3 +16,7 @@ For detailed documentation, see CODE_DOCUMENTATION.md
 """
 
 __version__ = "1.0.0"
+
+from rna_map import settings
+
+__all__ = ["settings"]
