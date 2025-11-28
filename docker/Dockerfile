@@ -20,7 +20,7 @@ ENV PATH=/opt/conda/bin:$PATH
 WORKDIR /opt/rna_map
 COPY . /opt/rna_map
 RUN pip install -e . \
- && python -c "from lib.bit_vectors import generate_bit_vectors; print('✅ lib package installed')" || true
+ && python -c "from rna_map.pipeline.functions import generate_bit_vectors; print('✅ rna_map package installed')" || true
 
 # Optional: simple sanity check (nonfatal)
 RUN set -eux; \

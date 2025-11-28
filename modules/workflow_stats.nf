@@ -188,8 +188,14 @@ process WORKFLOW_STATS {
             stats["summary"]["reads_in_bit_vectors"] = int(stats["bit_vectors"]["total_num_reads"])
     
     # Add file paths for reference
+    alignment_stats_path = None
+    if alignment_stats_files:
+        alignment_stats_path = str(alignment_stats_files[0])
+    elif single_stats_file.exists():
+        alignment_stats_path = str(single_stats_file)
+    
     stats["files"] = {
-        "alignment_stats": str(alignment_stats_file) if alignment_stats_file.exists() else None,
+        "alignment_stats": alignment_stats_path,
         "bitvector_summary": str(summary_file) if summary_file.exists() else None,
         "sam_file": str(output_dir / "Mapping_Files" / "aligned.sam") if (output_dir / "Mapping_Files" / "aligned.sam").exists() else None
     }

@@ -40,8 +40,8 @@ process RNA_MAP_BIT_VECTORS {
     ${python_cmd} << 'PYTHON_SCRIPT'
     import sys
     from pathlib import Path
-    from lib.bit_vectors import generate_bit_vectors
-    from lib.core.config import BitVectorConfig
+    from rna_map.pipeline.functions import generate_bit_vectors
+    from rna_map.core.config import BitVectorConfig
     
     sam_path = Path("${sam}")
     fasta_path = Path("${fasta}")

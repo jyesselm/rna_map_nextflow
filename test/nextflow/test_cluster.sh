@@ -110,10 +110,10 @@ fi
 # Test Python imports (should work without PYTHONPATH via .pth file)
 echo ""
 echo "Testing Python imports..."
-python -c "from lib.bit_vectors import generate_bit_vectors; print('✅ lib.bit_vectors')" || exit 1
-python -c "from lib.core.config import BitVectorConfig; print('✅ lib.core.config')" || exit 1
-python -c "from lib.analysis.statistics import merge_all_merge_mut_histo_dicts; print('✅ lib.analysis.statistics')" || exit 1
-python -c "from lib.mutation_histogram import write_mut_histos_to_json_file; print('✅ lib.mutation_histogram')" || exit 1
+python -c "from rna_map.pipeline.functions import generate_bit_vectors; print('✅ rna_map.pipeline.functions')" || exit 1
+python -c "from rna_map.core.config import BitVectorConfig; print('✅ rna_map.core.config')" || exit 1
+python -c "from rna_map.analysis.statistics import merge_all_merge_mut_histo_dicts; print('✅ rna_map.analysis.statistics')" || exit 1
+python -c "from rna_map.mutation_histogram import write_mut_histos_to_json_file; print('✅ rna_map.mutation_histogram')" || exit 1
 
 echo ""
 

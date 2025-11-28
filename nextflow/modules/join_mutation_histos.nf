@@ -52,7 +52,7 @@ process JOIN_MUTATION_HISTOS {
         sys.exit(0)
     
     # Load and merge all mutation histograms
-    from lib.analysis.statistics import merge_all_merge_mut_histo_dicts
+    from rna_map.analysis.statistics import merge_all_merge_mut_histo_dicts
     
     all_mut_histos = []
     for pickle_file in pickle_files:
@@ -78,7 +78,7 @@ process JOIN_MUTATION_HISTOS {
         pickle.dump(merged_histos, f)
     
     # Save merged JSON file
-    from lib.mutation_histogram import write_mut_histos_to_json_file
+    from rna_map.mutation_histogram import write_mut_histos_to_json_file
     write_mut_histos_to_json_file(merged_histos, "mutation_histos.json")
     
     print(f"Merged {len(all_mut_histos)} mutation histogram files")

@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from rna_map.analysis.mutation_histogram import MutationHistogram
-from rna_map.core.results import BitVectorResult, MappingResult, PipelineResult
+from rna_map.core.results import BitVectorResult, MappingResult
 
 
 def test_mapping_result():
@@ -70,54 +70,6 @@ def test_bit_vector_result_empty_histos():
     assert result.summary_path == Path("summary.csv")
 
 
-def test_pipeline_result():
-    """Test PipelineResult dataclass."""
-    mapping_result = MappingResult(
-        sam_path=Path("aligned.sam"),
-        fasta_path=Path("ref.fasta"),
-        is_paired=True,
-        output_dir=Path("output/Mapping_Files"),
-    )
-
-    bv_result = BitVectorResult(
-        mutation_histos={},
-        summary_path=Path("summary.csv"),
-        output_dir=Path("output/BitVector_Files"),
-    )
-
-    pipeline_result = PipelineResult(
-        mapping=mapping_result,
-        bit_vectors=bv_result,
-    )
-
-    assert pipeline_result.mapping == mapping_result
-    assert pipeline_result.bit_vectors == bv_result
-    assert pipeline_result.mapping.sam_path == Path("aligned.sam")
-    assert pipeline_result.bit_vectors.summary_path == Path("summary.csv")
-
-
-def test_pipeline_result_immutable():
-    """Test that PipelineResult is immutable."""
-    from dataclasses import FrozenInstanceError
-
-    mapping_result = MappingResult(
-        sam_path=Path("aligned.sam"),
-        fasta_path=Path("ref.fasta"),
-        is_paired=True,
-        output_dir=Path("output/Mapping_Files"),
-    )
-
-    bv_result = BitVectorResult(
-        mutation_histos={},
-        summary_path=Path("summary.csv"),
-        output_dir=Path("output/BitVector_Files"),
-    )
-
-    pipeline_result = PipelineResult(
-        mapping=mapping_result,
-        bit_vectors=bv_result,
-    )
-
-    with pytest.raises(FrozenInstanceError):
-        pipeline_result.mapping = mapping_result
+# PipelineResult removed - no longer needed after migration to Nextflow
+# Tests for PipelineResult removed
 
