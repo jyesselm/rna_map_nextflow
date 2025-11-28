@@ -2,6 +2,7 @@
 
 import sys
 import json
+import time
 from pathlib import Path
 from collections import defaultdict
 import pytest
@@ -78,6 +79,8 @@ def run_python_native(sam_path: Path, ref_seqs: dict[str, str]) -> dict:
     from rna_map.io.sam import SingleSamIterator
     from rna_map.analysis.bit_vector_iterator import BitVectorIterator
     
+    start_time = time.time()
+    
     iterator = BitVectorIterator(
         sam_path, ref_seqs, paired=False, use_pysam=False
     )
@@ -96,10 +99,13 @@ def run_python_native(sam_path: Path, ref_seqs: dict[str, str]) -> dict:
             )
             mutation_counts[mut_count] += 1
     
+    elapsed_time = time.time() - start_time
+    
     return {
         "total_reads": total_reads,
         "aligned_reads": aligned_reads,
         "mutation_counts": dict(mutation_counts),
+        "runtime_seconds": elapsed_time,
     }
 
 
@@ -110,6 +116,8 @@ def run_pysam(sam_path: Path, ref_seqs: dict[str, str]) -> dict:
     
     from rna_map.io.sam import SingleSamIterator
     from rna_map.analysis.bit_vector_iterator import BitVectorIterator
+    
+    start_time = time.time()
     
     iterator = BitVectorIterator(
         sam_path, ref_seqs, paired=False, use_pysam=True
@@ -129,10 +137,13 @@ def run_pysam(sam_path: Path, ref_seqs: dict[str, str]) -> dict:
             )
             mutation_counts[mut_count] += 1
     
+    elapsed_time = time.time() - start_time
+    
     return {
         "total_reads": total_reads,
         "aligned_reads": aligned_reads,
         "mutation_counts": dict(mutation_counts),
+        "runtime_seconds": elapsed_time,
     }
 
 
@@ -142,6 +153,8 @@ def run_cpp(sam_path: Path, ref_seqs: dict[str, str]) -> dict:
         return None
     
     import bit_vector_cpp
+    
+    start_time = time.time()
     
     gen = bit_vector_cpp.BitVectorGenerator(qscore_cutoff=25, num_of_surbases=10)
     phred_scores = _parse_phred_scores()
@@ -190,10 +203,13 @@ def run_cpp(sam_path: Path, ref_seqs: dict[str, str]) -> dict:
             except Exception:
                 pass
     
+    elapsed_time = time.time() - start_time
+    
     return {
         "total_reads": total_reads,
         "aligned_reads": aligned_reads,
         "mutation_counts": dict(mutation_counts),
+        "runtime_seconds": elapsed_time,
     }
 
 
@@ -302,6 +318,32 @@ def test_all_implementations_comparison_case1():
         counts = comparison["mutation_distribution"][mut_count]
         print(f"  {mut_count} mutations: {counts}")
     
+    # Performance comparison
+    print("\n" + "=" * 80)
+    print("PERFORMANCE COMPARISON")
+    print("=" * 80)
+    
+    runtimes = {}
+    for impl, data in results.items():
+        if data and "runtime_seconds" in data:
+            runtimes[impl] = data["runtime_seconds"]
+    
+    if runtimes:
+        baseline_time = runtimes.get("python_native", 0)
+        print(f"\nRuntime (seconds):")
+        for impl, runtime in sorted(runtimes.items()):
+            speedup = baseline_time / runtime if runtime > 0 else 0
+            total_reads = results[impl].get("total_reads", 0)
+            reads_per_sec = total_reads / runtime if runtime > 0 else 0
+            print(f"  {impl:15s}: {runtime:6.2f}s  ({speedup:4.2f}x)  [{reads_per_sec:8.0f} reads/sec]")
+        
+        if len(runtimes) > 1 and baseline_time > 0:
+            print(f"\nSpeedup relative to Python Native:")
+            for impl, runtime in sorted(runtimes.items()):
+                if impl != "python_native" and runtime > 0:
+                    speedup = baseline_time / runtime
+                    print(f"  {impl:15s}: {speedup:4.2f}x faster")
+    
     if comparison["differences"]:
         print("\n⚠️  DIFFERENCES FOUND:")
         for diff in comparison["differences"]:
@@ -375,6 +417,32 @@ def test_all_implementations_comparison_case2():
     for mut_count in sorted(comparison["mutation_distribution"].keys())[:10]:
         counts = comparison["mutation_distribution"][mut_count]
         print(f"  {mut_count} mutations: {counts}")
+    
+    # Performance comparison
+    print("\n" + "=" * 80)
+    print("PERFORMANCE COMPARISON")
+    print("=" * 80)
+    
+    runtimes = {}
+    for impl, data in results.items():
+        if data and "runtime_seconds" in data:
+            runtimes[impl] = data["runtime_seconds"]
+    
+    if runtimes:
+        baseline_time = runtimes.get("python_native", 0)
+        print(f"\nRuntime (seconds):")
+        for impl, runtime in sorted(runtimes.items()):
+            speedup = baseline_time / runtime if runtime > 0 else 0
+            total_reads = results[impl].get("total_reads", 0)
+            reads_per_sec = total_reads / runtime if runtime > 0 else 0
+            print(f"  {impl:15s}: {runtime:6.2f}s  ({speedup:4.2f}x)  [{reads_per_sec:8.0f} reads/sec]")
+        
+        if len(runtimes) > 1 and baseline_time > 0:
+            print(f"\nSpeedup relative to Python Native:")
+            for impl, runtime in sorted(runtimes.items()):
+                if impl != "python_native" and runtime > 0:
+                    speedup = baseline_time / runtime
+                    print(f"  {impl:15s}: {speedup:4.2f}x faster")
     
     if comparison["differences"]:
         print("\n⚠️  DIFFERENCES:")
@@ -451,6 +519,32 @@ if __name__ == "__main__":
     for mut_count in sorted(comparison["mutation_distribution"].keys())[:10]:
         counts = comparison["mutation_distribution"][mut_count]
         print(f"  {mut_count} mutations: {counts}")
+    
+    # Performance comparison
+    print("\n" + "=" * 80)
+    print("PERFORMANCE COMPARISON")
+    print("=" * 80)
+    
+    runtimes = {}
+    for impl, data in results.items():
+        if data and "runtime_seconds" in data:
+            runtimes[impl] = data["runtime_seconds"]
+    
+    if runtimes:
+        baseline_time = runtimes.get("python_native", 0)
+        print(f"\nRuntime (seconds):")
+        for impl, runtime in sorted(runtimes.items()):
+            speedup = baseline_time / runtime if runtime > 0 else 0
+            total_reads = results[impl].get("total_reads", 0)
+            reads_per_sec = total_reads / runtime if runtime > 0 else 0
+            print(f"  {impl:15s}: {runtime:6.2f}s  ({speedup:4.2f}x)  [{reads_per_sec:8.0f} reads/sec]")
+        
+        if len(runtimes) > 1 and baseline_time > 0:
+            print(f"\nSpeedup relative to Python Native:")
+            for impl, runtime in sorted(runtimes.items()):
+                if impl != "python_native" and runtime > 0:
+                    speedup = baseline_time / runtime
+                    print(f"  {impl:15s}: {speedup:4.2f}x faster")
     
     if comparison["differences"]:
         print("\n⚠️  DIFFERENCES:")
