@@ -13,9 +13,16 @@ sys.path.insert(0, str(PROJECT_ROOT / "cpp"))
 if str(PROJECT_ROOT / "lib") not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT / "lib"))
 
-TEST_RESOURCES = TEST_DIR / "resources" / "case_1"
-SAM_PATH = TEST_RESOURCES / "output" / "Mapping_Files" / "aligned.sam"
-FASTA_PATH = TEST_RESOURCES / "test.fasta"
+TEST_RESOURCES_CASE1 = TEST_DIR / "resources" / "case_1"
+TEST_RESOURCES_CASE2 = TEST_DIR / "resources" / "case_2"
+
+# Case 1 paths
+SAM_PATH_CASE1 = TEST_RESOURCES_CASE1 / "output" / "Mapping_Files" / "aligned.sam"
+FASTA_PATH_CASE1 = TEST_RESOURCES_CASE1 / "test.fasta"
+
+# Case 2 paths
+SAM_PATH_CASE2 = TEST_RESOURCES_CASE2 / "output" / "Mapping_Files" / "aligned.sam"
+FASTA_PATH_CASE2 = TEST_RESOURCES_CASE2 / "C009J.fasta"
 
 
 def _read_reference_sequences(fasta_path: Path) -> dict[str, str]:
@@ -300,26 +307,42 @@ def detailed_comparison(results: dict[str, dict]) -> dict:
 
 def main():
     """Run detailed comparison."""
+    import sys
+    
+    # Determine which case to test
+    case = sys.argv[1] if len(sys.argv) > 1 else "case1"
+    
+    if case == "case2":
+        if not SAM_PATH_CASE2.exists():
+            print(f"ERROR: SAM file not found: {SAM_PATH_CASE2}")
+            sys.exit(1)
+        ref_seqs = _read_reference_sequences(FASTA_PATH_CASE2)
+        sam_path = SAM_PATH_CASE2
+        case_name = "Case 2 (More Realistic)"
+    else:
+        ref_seqs = _read_reference_sequences(FASTA_PATH_CASE1)
+        sam_path = SAM_PATH_CASE1
+        case_name = "Case 1"
+    
     print("=" * 80)
-    print("DETAILED IMPLEMENTATION COMPARISON")
+    print(f"DETAILED IMPLEMENTATION COMPARISON - {case_name}")
     print("=" * 80)
     
-    ref_seqs = _read_reference_sequences(FASTA_PATH)
     results = {}
     
     # Run all implementations
     print("\n1. Running Python Native...")
-    results["python_native"] = run_python_native(SAM_PATH, ref_seqs, max_reads=50)
+    results["python_native"] = run_python_native(sam_path, ref_seqs, max_reads=100)
     
     print("2. Running C++...")
-    cpp_result = run_cpp(SAM_PATH, ref_seqs, max_reads=50)
+    cpp_result = run_cpp(sam_path, ref_seqs, max_reads=100)
     if cpp_result:
         results["cpp"] = cpp_result
     else:
         print("   ⚠️  C++ not available")
     
     print("3. Running pysam...")
-    pysam_result = run_pysam(SAM_PATH, ref_seqs, max_reads=50)
+    pysam_result = run_pysam(sam_path, ref_seqs, max_reads=100)
     if pysam_result:
         results["pysam"] = pysam_result
     else:

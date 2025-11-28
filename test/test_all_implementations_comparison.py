@@ -14,9 +14,18 @@ sys.path.insert(0, str(PROJECT_ROOT / "cpp"))
 if str(PROJECT_ROOT / "lib") not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT / "lib"))
 
-TEST_RESOURCES = TEST_DIR / "resources" / "case_1"
-SAM_PATH = TEST_RESOURCES / "output" / "Mapping_Files" / "aligned.sam"
-FASTA_PATH = TEST_RESOURCES / "test.fasta"
+TEST_RESOURCES_CASE1 = TEST_DIR / "resources" / "case_1"
+TEST_RESOURCES_CASE2 = TEST_DIR / "resources" / "case_2"
+
+# Case 1 paths
+SAM_PATH_CASE1 = TEST_RESOURCES_CASE1 / "output" / "Mapping_Files" / "aligned.sam"
+FASTA_PATH_CASE1 = TEST_RESOURCES_CASE1 / "test.fasta"
+
+# Case 2 paths - check if SAM exists, otherwise use FASTQ to generate
+SAM_PATH_CASE2 = TEST_RESOURCES_CASE2 / "output" / "Mapping_Files" / "aligned.sam"
+FASTA_PATH_CASE2 = TEST_RESOURCES_CASE2 / "C009J.fasta"
+FASTQ1_CASE2 = TEST_RESOURCES_CASE2 / "test_R1.fastq.gz"
+FASTQ2_CASE2 = TEST_RESOURCES_CASE2 / "test_R2.fastq.gz"
 
 
 def _check_cpp_available():
@@ -237,12 +246,12 @@ def compare_results(results: dict[str, dict]) -> dict:
 
 
 @pytest.mark.skipif(
-    not SAM_PATH.exists() or not FASTA_PATH.exists(),
-    reason="Test data not found"
+    not SAM_PATH_CASE1.exists() or not FASTA_PATH_CASE1.exists(),
+    reason="Case 1 test data not found"
 )
-def test_all_implementations_comparison():
-    """Test and compare all three implementations."""
-    ref_seqs = _read_reference_sequences(FASTA_PATH)
+def test_all_implementations_comparison_case1():
+    """Test and compare all three implementations on case_1."""
+    ref_seqs = _read_reference_sequences(FASTA_PATH_CASE1)
     
     results = {}
     
@@ -250,7 +259,7 @@ def test_all_implementations_comparison():
     print("\n" + "=" * 80)
     print("Running Python Native Implementation")
     print("=" * 80)
-    results["python_native"] = run_python_native(SAM_PATH, ref_seqs)
+    results["python_native"] = run_python_native(SAM_PATH_CASE1, ref_seqs)
     print(f"Total reads: {results['python_native']['total_reads']}")
     print(f"Aligned reads: {results['python_native']['aligned_reads']}")
     
@@ -259,7 +268,7 @@ def test_all_implementations_comparison():
         print("\n" + "=" * 80)
         print("Running C++ Implementation")
         print("=" * 80)
-        results["cpp"] = run_cpp(SAM_PATH, ref_seqs)
+        results["cpp"] = run_cpp(SAM_PATH_CASE1, ref_seqs)
         if results["cpp"]:
             print(f"Total reads: {results['cpp']['total_reads']}")
             print(f"Aligned reads: {results['cpp']['aligned_reads']}")
@@ -271,7 +280,7 @@ def test_all_implementations_comparison():
         print("\n" + "=" * 80)
         print("Running pysam Implementation")
         print("=" * 80)
-        results["pysam"] = run_pysam(SAM_PATH, ref_seqs)
+        results["pysam"] = run_pysam(SAM_PATH_CASE1, ref_seqs)
         if results["pysam"]:
             print(f"Total reads: {results['pysam']['total_reads']}")
             print(f"Aligned reads: {results['pysam']['aligned_reads']}")
@@ -321,31 +330,111 @@ def test_all_implementations_comparison():
             )
 
 
-if __name__ == "__main__":
-    # Run as script
-    ref_seqs = _read_reference_sequences(FASTA_PATH)
+@pytest.mark.skipif(
+    not SAM_PATH_CASE2.exists() or not FASTA_PATH_CASE2.exists(),
+    reason="Case 2 test data not found (SAM file may need to be generated)"
+)
+def test_all_implementations_comparison_case2():
+    """Test and compare all three implementations on case_2 (more realistic)."""
+    ref_seqs = _read_reference_sequences(FASTA_PATH_CASE2)
     
     results = {}
     
-    print("=" * 80)
-    print("IMPLEMENTATION COMPARISON TEST")
+    print("\n" + "=" * 80)
+    print("CASE 2 COMPARISON (More Realistic Data)")
     print("=" * 80)
     
     # Run Python native
     print("\n1. Running Python Native Implementation...")
-    results["python_native"] = run_python_native(SAM_PATH, ref_seqs)
+    results["python_native"] = run_python_native(SAM_PATH_CASE2, ref_seqs)
     
     # Run C++
     if _check_cpp_available():
         print("\n2. Running C++ Implementation...")
-        results["cpp"] = run_cpp(SAM_PATH, ref_seqs)
+        results["cpp"] = run_cpp(SAM_PATH_CASE2, ref_seqs)
     else:
         print("\n2. C++ implementation not available")
     
     # Run pysam
     if _check_pysam_available():
         print("\n3. Running pysam Implementation...")
-        results["pysam"] = run_pysam(SAM_PATH, ref_seqs)
+        results["pysam"] = run_pysam(SAM_PATH_CASE2, ref_seqs)
+    else:
+        print("\n3. pysam not available (install with: pip install pysam)")
+    
+    # Compare
+    comparison = compare_results(results)
+    
+    print("\n" + "=" * 80)
+    print("CASE 2 COMPARISON SUMMARY")
+    print("=" * 80)
+    print(f"\nTotal reads: {comparison['total_reads']}")
+    print(f"Aligned reads: {comparison['aligned_reads']}")
+    
+    print("\nMutation distribution:")
+    for mut_count in sorted(comparison["mutation_distribution"].keys())[:10]:
+        counts = comparison["mutation_distribution"][mut_count]
+        print(f"  {mut_count} mutations: {counts}")
+    
+    if comparison["differences"]:
+        print("\n⚠️  DIFFERENCES:")
+        for diff in comparison["differences"]:
+            print(f"  - {diff}")
+    else:
+        print("\n✅ All implementations produce identical results!")
+    
+    # Assertions
+    assert len(results) >= 1, "At least one implementation should run"
+    if len(results) > 1 and comparison["differences"]:
+        pytest.fail(f"Implementations differ: {comparison['differences']}")
+
+
+if __name__ == "__main__":
+    import sys
+    
+    # Determine which case to test
+    case = sys.argv[1] if len(sys.argv) > 1 else "case1"
+    
+    if case == "case2":
+        if not SAM_PATH_CASE2.exists():
+            print(f"ERROR: SAM file not found: {SAM_PATH_CASE2}")
+            print("You may need to run the pipeline first to generate the SAM file:")
+            print(f"  nextflow run main.nf -profile local \\")
+            print(f"    --fasta {FASTA_PATH_CASE2} \\")
+            print(f"    --fastq1 {FASTQ1_CASE2} \\")
+            print(f"    --fastq2 {FASTQ2_CASE2} \\")
+            print(f"    --output_dir {TEST_RESOURCES_CASE2 / 'output'}")
+            sys.exit(1)
+        
+        ref_seqs = _read_reference_sequences(FASTA_PATH_CASE2)
+        sam_path = SAM_PATH_CASE2
+        case_name = "Case 2 (More Realistic)"
+    else:
+        ref_seqs = _read_reference_sequences(FASTA_PATH_CASE1)
+        sam_path = SAM_PATH_CASE1
+        case_name = "Case 1"
+    
+    results = {}
+    
+    print("=" * 80)
+    print(f"IMPLEMENTATION COMPARISON TEST - {case_name}")
+    print("=" * 80)
+    
+    # Run Python native
+    print("\n1. Running Python Native Implementation...")
+    results["python_native"] = run_python_native(sam_path, ref_seqs)
+    
+    # Run C++
+    if _check_cpp_available():
+        print("\n2. Running C++ Implementation...")
+        results["cpp"] = run_cpp(sam_path, ref_seqs)
+    else:
+        print("\n2. C++ implementation not available")
+    
+    # Run pysam
+    if _check_pysam_available():
+        print("\n3. Running pysam Implementation...")
+        results["pysam"] = run_pysam(sam_path, ref_seqs)
     else:
         print("\n3. pysam not available (install with: pip install pysam)")
     
