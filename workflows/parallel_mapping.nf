@@ -104,7 +104,8 @@ workflow PARALLEL_MAPPING {
     BOWTIE2_ALIGN(align_input, bt2_alignment_args)
     
     // Step 5: Generate bit vectors on each chunk (in parallel)
-    RNA_MAP_BIT_VECTORS(BOWTIE2_ALIGN.out, qscore_cutoff, map_score_cutoff, summary_output_only)
+    // Access the aligned output channel (not stats)
+    RNA_MAP_BIT_VECTORS(BOWTIE2_ALIGN.out.aligned, qscore_cutoff, map_score_cutoff, summary_output_only)
     
     // Step 6: Join results from all chunks
     // Group by original sample_id
@@ -127,7 +128,7 @@ workflow PARALLEL_MAPPING {
         .set { chunk_bv_files }
     
     // Get metadata for joining
-    BOWTIE2_ALIGN.out
+    BOWTIE2_ALIGN.out.aligned
         .map { chunk_id, sam, fasta, is_paired_file, dot_bracket ->
             def sample_id = chunk_id.replaceAll(/^(.*)_chunk[0-9]+$/, '$1')
             def is_paired = is_paired_file.text.trim()

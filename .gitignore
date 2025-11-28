@@ -49,6 +49,9 @@ nextflow/test_results*/
 nextflow/*test_results*/
 
 # Nextflow outputs
+.nextflow.log*
+.nextflow/
+reports/
 nextflow/reports/
 nextflow/.nextflow/
 nextflow/work/

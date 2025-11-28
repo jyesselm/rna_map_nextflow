@@ -14,6 +14,7 @@ include { TRIM_GALORE } from './modules/trim_galore.nf'
 include { BOWTIE2_BUILD } from './modules/bowtie2_build.nf'
 include { BOWTIE2_ALIGN } from './modules/bowtie2_align.nf'
 include { RNA_MAP_BIT_VECTORS } from './modules/rna_map_bit_vectors.nf'
+include { WORKFLOW_STATS } from './modules/workflow_stats.nf'
 
 // Include subworkflows
 include { MAPPING } from './workflows/mapping.nf'
@@ -48,6 +49,8 @@ params.partition = "normal"
 // Parallel processing
 params.split_fastq = false
 params.chunk_size = 1000000  // Reads per chunk (1M reads default)
+// Container options (for Singularity/Apptainer)
+params.container_path = null  // Path to Singularity/Apptainer image (.sif file)
 
 // Input channel for samples CSV
 if (params.samples_csv) {
@@ -115,10 +118,27 @@ workflow {
             params.map_score_cutoff,
             params.summary_output_only
         )
+        
+        // Aggregate all workflow statistics at the end (parallel mode)
+        // Collect from output directory (all files already published)
+        PARALLEL_MAPPING.out.aligned
+            .map { sample_id, sam, fasta, is_paired, dot_bracket ->
+                def output_dir = file("${params.output_dir}/${sample_id}")
+                [sample_id, output_dir]
+            }
+            .set { stats_input_ch }
+        
+        WORKFLOW_STATS(stats_input_ch)
+        
         // Results already published by PARALLEL_MAPPING subworkflow
         PARALLEL_MAPPING.out.aligned
             .view { sample_id, sam, fasta, is_paired, dot_bracket ->
                 "Sample ${sample_id}: Processing complete (parallel mode)"
+            }
+        
+        WORKFLOW_STATS.out.stats
+            .view { stats_file ->
+                "Workflow statistics: ${stats_file}"
             }
     } else {
         // Standard processing: single pipeline
@@ -140,10 +160,26 @@ workflow {
             params.summary_output_only
         )
         
+        // Aggregate all workflow statistics at the end
+        // Collect from output directory (all files already published)
+        RNA_MAP_BIT_VECTORS.out.summary
+            .map { sample_id, summary_file ->
+                def output_dir = file("${params.output_dir}/${sample_id}")
+                [sample_id, output_dir]
+            }
+            .set { stats_input_ch }
+        
+        WORKFLOW_STATS(stats_input_ch)
+        
         // Publish results
         RNA_MAP_BIT_VECTORS.out.summary
             .view { sample_id, summary_file ->
                 "Sample ${sample_id}: ${summary_file}"
+            }
+        
+        WORKFLOW_STATS.out.stats
+            .view { stats_file ->
+                "Workflow statistics: ${stats_file}"
             }
     }
 }

@@ -16,14 +16,21 @@ This guide provides comprehensive instructions for testing the RNA MAP Nextflow 
 
 ### Required Software
 
-- **Conda/Mamba** - For environment management
+- **Conda/Mamba** - For environment management (or use containers)
 - **Java 8-18** - Required by Nextflow
 - **Nextflow 23.0+** - Workflow engine
-- **Bioinformatics tools**:
+- **Bioinformatics tools** (if not using containers):
   - Bowtie2 2.2.9+
   - FastQC 0.11.9+
   - Trim Galore 0.6.6+
   - Cutadapt 1.18+
+
+### Optional: Container Support
+
+- **Singularity/Apptainer** - For containerized execution (recommended)
+  - Provides consistent environment
+  - Eliminates need for package installation on compute nodes
+  - See [CONTAINER_USAGE.md](CONTAINER_USAGE.md) for details
 
 ### Cluster Requirements
 
@@ -60,21 +67,20 @@ which fastqc
 which trim_galore
 ```
 
-### 3. Set PYTHONPATH
+### 3. Install Python Package
 
-**CRITICAL**: You must set PYTHONPATH for the workflow to work!
+**CRITICAL**: You must install the Python package for the workflow to work!
 
 ```bash
-# Set PYTHONPATH (add to your ~/.bashrc or ~/.zshrc for persistence)
-export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+# Install the package in editable mode (ensures lib/ is available)
+pip install -e .
 
-# Verify it's set
-echo $PYTHONPATH
-# Should show: /path/to/rna_map_nextflow/lib
-
-# Test Python imports
+# Verify installation
 python -c "from lib.bit_vectors import generate_bit_vectors; print('✅ lib imports work')"
+python -c "from lib.core.config import BitVectorConfig; print('✅ lib.core imports work')"
 ```
+
+**Note**: The package is automatically installed by Nextflow processes via `beforeScript`, but installing it manually ensures it's available for testing and debugging.
 
 ### 4. Verify Test Data
 
@@ -99,6 +105,25 @@ We recommend testing in this order:
 4. **Level 4: Full Test** - Complete workflow with all steps
 5. **Level 5: Parallel Test** - Test FASTQ splitting and parallel processing
 
+### Using Containers (Recommended)
+
+If your cluster supports Singularity/Apptainer, we recommend using containers:
+
+```bash
+# Build container (one time)
+./scripts/build_singularity.sh /path/to/rna-map.sif
+
+# Run with container
+nextflow run main.nf \
+    -profile slurm_singularity \
+    --container_path /path/to/rna-map.sif \
+    --fasta test/resources/case_1/test.fasta \
+    --fastq1 test/resources/case_1/test_mate1.fastq \
+    --output_dir test_results_container
+```
+
+See [CONTAINER_USAGE.md](CONTAINER_USAGE.md) for detailed container usage guide.
+
 ## Step-by-Step Testing
 
 ### Level 1: Syntax Validation
@@ -108,7 +133,7 @@ We recommend testing in this order:
 ```bash
 # Activate environment
 conda activate rna-map-nextflow
-export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+pip install -e .
 
 # Run syntax validation script
 chmod +x test/nextflow/test_local_simple.sh
@@ -184,11 +209,11 @@ cat > test_cluster_minimal.sh << 'EOF'
 source $(conda info --base)/etc/profile.d/conda.sh
 conda activate rna-map-nextflow
 
-# Set PYTHONPATH
-export PYTHONPATH="${SLURM_SUBMIT_DIR}/lib:${PYTHONPATH}"
-
 # Change to submission directory
 cd ${SLURM_SUBMIT_DIR}
+
+# Install Python package (ensures lib/ is available without PYTHONPATH)
+pip install -e . --quiet
 
 # Run Nextflow
 nextflow run main.nf \
@@ -252,11 +277,11 @@ cat > test_cluster_full.sh << 'EOF'
 source $(conda info --base)/etc/profile.d/conda.sh
 conda activate rna-map-nextflow
 
-# Set PYTHONPATH
-export PYTHONPATH="${SLURM_SUBMIT_DIR}/lib:${PYTHONPATH}"
-
 # Change to submission directory
 cd ${SLURM_SUBMIT_DIR}
+
+# Install Python package (ensures lib/ is available without PYTHONPATH)
+pip install -e . --quiet
 
 # Run Nextflow with all steps
 nextflow run main.nf \
@@ -302,8 +327,8 @@ cat > test_cluster_parallel.sh << 'EOF'
 
 source $(conda info --base)/etc/profile.d/conda.sh
 conda activate rna-map-nextflow
-export PYTHONPATH="${SLURM_SUBMIT_DIR}/lib:${PYTHONPATH}"
 cd ${SLURM_SUBMIT_DIR}
+pip install -e . --quiet
 
 nextflow run main.nf \
     -profile slurm \
@@ -425,14 +450,15 @@ PYTHON
 
 **Solution**:
 ```bash
-# Ensure PYTHONPATH is set
-export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+# Install the Python package
+pip install -e .
 
-# Verify it's set in your job script
-echo $PYTHONPATH
-
-# Test import
+# Verify installation
 python -c "from lib.bit_vectors import generate_bit_vectors; print('OK')"
+
+# If still failing, check that you're in the project root directory
+pwd
+# Should be: /path/to/rna_map_nextflow
 ```
 
 ### Issue: "Java version error"
@@ -508,9 +534,9 @@ cat .nextflow.log
 # Check process logs in work directory
 ls -la work/*/
 
-# Verify PYTHONPATH in process environment
-# Add to nextflow.config process.beforeScript:
-# export PYTHONPATH="${baseDir}/lib:${PYTHONPATH}"
+# Verify package is installed in conda environment
+# The package should be automatically installed via beforeScript in configs
+# If issues persist, manually install: pip install -e .
 ```
 
 ### Issue: "Out of memory" or "Time limit exceeded"
@@ -585,7 +611,7 @@ Use this checklist to verify your installation:
 - [ ] Repository cloned successfully
 - [ ] Conda environment created and activated
 - [ ] All tools installed (nextflow, java, bowtie2, fastqc, trim_galore)
-- [ ] PYTHONPATH set correctly
+- [ ] Python package installed (`pip install -e .`)
 - [ ] Python imports work (`from lib.bit_vectors import ...`)
 - [ ] Syntax validation passes (`test_local_simple.sh`)
 - [ ] Dry run completes without errors

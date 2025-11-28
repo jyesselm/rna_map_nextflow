@@ -14,6 +14,9 @@ conda activate rna-map-nextflow
 # Change to project directory
 cd ${SLURM_SUBMIT_DIR:-/work/yesselmanlab/jyesselm/installs/rna_map_nextflow}
 
+# Install Python package (ensures lib/ is available without PYTHONPATH)
+pip install -e . --quiet
+
 # Run Nextflow with slurm_local profile
 # This uses local executor within the SLURM job to reduce overhead
 nextflow run main.nf \

@@ -20,14 +20,14 @@ ENV PATH=/opt/conda/bin:$PATH
 WORKDIR /opt/rna_map
 COPY . /opt/rna_map
 RUN pip install -e . \
- && rna-map --help >/dev/null 2>&1 || true
+ && python -c "from lib.bit_vectors import generate_bit_vectors; print('✅ lib package installed')" || true
 
 # Optional: simple sanity check (nonfatal)
 RUN set -eux; \
-  for exe in bowtie2 fastqc cutadapt trim_galore rna-map; do \
+  for exe in bowtie2 fastqc cutadapt trim_galore; do \
     command -v "$exe" || echo "MISS: $exe"; \
   done; \
   true
 
+# Set working directory for Nextflow
 WORKDIR /data
-CMD ["rna-map"]

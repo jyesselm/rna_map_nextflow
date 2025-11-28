@@ -37,7 +37,7 @@ workflow MAPPING {
     BOWTIE2_ALIGN(BOWTIE2_BUILD.out, bt2_alignment_args)
     
     emit:
-    aligned = BOWTIE2_ALIGN.out
+    aligned = BOWTIE2_ALIGN.out.aligned
         .map { sample_id, sam, fasta, is_paired_file, dot_bracket ->
             def is_paired = is_paired_file.text.trim()
             [sample_id, sam, fasta, is_paired, dot_bracket]
