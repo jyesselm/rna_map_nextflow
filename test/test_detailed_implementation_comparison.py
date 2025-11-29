@@ -14,15 +14,10 @@ if str(PROJECT_ROOT / "lib") not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT / "lib"))
 
 TEST_RESOURCES_CASE1 = TEST_DIR / "resources" / "case_1"
-TEST_RESOURCES_CASE2 = TEST_DIR / "resources" / "case_2"
 
 # Case 1 paths
 SAM_PATH_CASE1 = TEST_RESOURCES_CASE1 / "output" / "Mapping_Files" / "aligned.sam"
 FASTA_PATH_CASE1 = TEST_RESOURCES_CASE1 / "test.fasta"
-
-# Case 2 paths
-SAM_PATH_CASE2 = TEST_RESOURCES_CASE2 / "output" / "Mapping_Files" / "aligned.sam"
-FASTA_PATH_CASE2 = TEST_RESOURCES_CASE2 / "C009J.fasta"
 
 
 def _read_reference_sequences(fasta_path: Path) -> dict[str, str]:
@@ -309,20 +304,10 @@ def main():
     """Run detailed comparison."""
     import sys
     
-    # Determine which case to test
-    case = sys.argv[1] if len(sys.argv) > 1 else "case1"
-    
-    if case == "case2":
-        if not SAM_PATH_CASE2.exists():
-            print(f"ERROR: SAM file not found: {SAM_PATH_CASE2}")
-            sys.exit(1)
-        ref_seqs = _read_reference_sequences(FASTA_PATH_CASE2)
-        sam_path = SAM_PATH_CASE2
-        case_name = "Case 2 (More Realistic)"
-    else:
-        ref_seqs = _read_reference_sequences(FASTA_PATH_CASE1)
-        sam_path = SAM_PATH_CASE1
-        case_name = "Case 1"
+    # Use case 1
+    ref_seqs = _read_reference_sequences(FASTA_PATH_CASE1)
+    sam_path = SAM_PATH_CASE1
+    case_name = "Case 1"
     
     print("=" * 80)
     print(f"DETAILED IMPLEMENTATION COMPARISON - {case_name}")

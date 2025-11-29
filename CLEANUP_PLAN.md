@@ -19,9 +19,6 @@
 ### 1. Files/Directories to Remove (test outputs & temporary files)
 - `=` (accidental file)
 - `test_output_*/` directories
-- `case2_baseline_test_results/`
-- `case2_optimization_test/`
-- `case2_test_results/`
 - `optimization_optuna_test/`
 - `optimization_optuna_improved_test/`
 - `optimization_score_test/`
@@ -33,9 +30,6 @@
 ### 2. Documentation Consolidation
 **Root-level docs to move to `docs/optimization/`:**
 - `TOP_100_PARAMETER_ANALYSIS.md` → `docs/optimization/TOP_100_PARAMETER_ANALYSIS.md`
-- `CASE2_TEST_RESULTS.md` → `docs/optimization/CASE2_TEST_RESULTS.md`
-- `CASE2_BASELINE_VS_OPTIMIZED.md` → `docs/optimization/CASE2_BASELINE_VS_OPTIMIZED.md`
-- `CASE2_OPTIMIZATION_COMMAND.md` → `docs/optimization/CASE2_OPTIMIZATION_COMMAND.md`
 - `BEST_PARAMETERS.md` → `docs/optimization/BEST_PARAMETERS.md`
 - `OPTIMIZATION_IMPROVEMENTS.md` → `docs/optimization/OPTIMIZATION_IMPROVEMENTS.md`
 - `OPTUNA_ENV_SETUP.md` → `docs/optimization/OPTUNA_ENV_SETUP.md`
@@ -65,10 +59,7 @@
 - `original_baseline_parameters.txt` → `docs/optimization/recommended_params/original_baseline_parameters.txt`
 
 **Remove:**
-- `test_baseline_params_case2.py` (if redundant)
-- `test_best_params_case2.py` (if redundant)
 - `test_optuna_env.py` (if redundant)
-- `RUN_CASE2_OPTIMIZATION.sh` (move to docs if useful example)
 - `setup_optuna_env.sh` (if redundant with environment files)
 
 ### 4. Update .gitignore

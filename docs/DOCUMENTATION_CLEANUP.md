@@ -56,7 +56,6 @@ The following categories of documentation have been moved to `docs/archive/`:
 - CIGAR parsing comparisons and fixes
 - Implementation performance comparisons
 - Storage format performance analysis
-- Case 2 detailed test results
 - Parameter comparison details
 
 ### Redundant Guides

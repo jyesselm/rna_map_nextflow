@@ -1,0 +1,63 @@
+# Configuration for cluster-based Bowtie2 parameter optimization
+# This file controls optimization settings for all test cases
+
+# Global optimization settings
+optimization:
+  # Number of parameter combinations to test
+  max_combinations: 200
+  
+  # Number of trials for Optuna-based optimization (if using optuna script)
+  n_trials: 100
+  
+  # Read length assumption
+  read_length: 150
+  
+  # Threads per alignment
+  threads: 8
+  
+  # MAPQ cutoff for high-quality alignments
+  mapq_cutoff: 20
+  
+  # Quality score cutoff for bit vectors
+  qscore_cutoff: 25
+
+# Cluster job settings
+cluster:
+  # SLURM partition to use
+  partition: "normal"
+  
+  # Default time limit per job (format: HH:MM:SS)
+  time: "24:00:00"
+  
+  # Default memory per job
+  memory: "32G"
+  
+  # Default CPUs per job
+  cpus: 8
+  
+  # Account/group for SLURM
+  account: null  # Set to your account name if required
+  
+  # Email for job notifications (optional)
+  email: null
+  
+  # Job name prefix
+  job_name_prefix: "bt2_opt"
+
+# Output settings
+output:
+  # Base directory for all optimization results
+  base_dir: "optimization_results"
+  
+  # Keep intermediate files (SAM files, etc.)
+  keep_intermediates: false
+
+# Per-case overrides (optional)
+# You can override settings for specific cases by adding entries here
+case_overrides:
+  # Example:
+  # case_1:
+  #   max_combinations: 500
+  #   time: "48:00:00"
+  #   memory: "64G"
+

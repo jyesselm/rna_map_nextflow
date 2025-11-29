@@ -28,8 +28,6 @@ from rna_map.io.bit_vector_storage import (
 TEST_RESOURCES = TEST_DIR / "resources"
 FASTA_PATH_CASE1 = TEST_RESOURCES / "case_1" / "test.fasta"
 SAM_PATH_CASE1 = TEST_RESOURCES / "case_1" / "output" / "Mapping_Files" / "aligned.sam"
-FASTA_PATH_CASE2 = TEST_RESOURCES / "case_2" / "C009J.fasta"
-SAM_PATH_CASE2 = TEST_RESOURCES / "case_2" / "output" / "Mapping_Files" / "aligned.sam"
 
 
 def _read_reference_sequences(fasta_path: Path) -> dict[str, str]:
@@ -135,15 +133,6 @@ def _get_file_sizes(output_dir: Path, ref_name: str) -> dict[str, int]:
 def test_storage_format_performance_case1():
     """Test and compare TEXT vs JSON storage format performance - Case 1."""
     _run_storage_performance_test(SAM_PATH_CASE1, FASTA_PATH_CASE1, "Case 1")
-
-
-@pytest.mark.skipif(
-    not SAM_PATH_CASE2.exists() or not FASTA_PATH_CASE2.exists(),
-    reason="Case 2 test data not found"
-)
-def test_storage_format_performance_case2():
-    """Test and compare TEXT vs JSON storage format performance - Case 2."""
-    _run_storage_performance_test(SAM_PATH_CASE2, FASTA_PATH_CASE2, "Case 2")
 
 
 def _run_storage_performance_test(sam_path: Path, fasta_path: Path, case_name: str):

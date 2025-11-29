@@ -36,7 +36,7 @@ def parse_bowtie2_stats(stderr_file: Path) -> Dict:
         stderr_file: Path to Bowtie2 stderr output
         
     Returns:
-        Dictionary with alignment statistics
+        Dictionary with alignment statistics including multi-mapping info
     """
     stats = {
         "total_reads": 0,
@@ -44,22 +44,37 @@ def parse_bowtie2_stats(stderr_file: Path) -> Dict:
         "aligned_exactly_1_time": 0,
         "aligned_more_than_1_time": 0,
         "overall_alignment_rate": 0.0,
+        "concordant_0_times": 0,
+        "concordant_exactly_1_time": 0,
+        "concordant_more_than_1_time": 0,  # Reads aligning to multiple references
+        "is_paired_end": False,
     }
     
     if not stderr_file.exists():
         return stats
     
     with open(stderr_file) as f:
-        for line in f:
+        content = f.read()
+        lines = content.split('\n')
+        
+        for line in lines:
             line = line.strip()
             if "reads; of these:" in line:
                 stats["total_reads"] = int(line.split()[0])
-            elif "aligned 0 times" in line:
+            elif "were paired" in line:
+                stats["is_paired_end"] = True
+            elif "aligned 0 times" in line and "concordantly" not in line:
                 stats["aligned_0_times"] = int(line.split()[0])
-            elif "aligned exactly 1 time" in line:
+            elif "aligned exactly 1 time" in line and "concordantly" not in line:
                 stats["aligned_exactly_1_time"] = int(line.split()[0])
-            elif "aligned >1 times" in line:
+            elif "aligned >1 times" in line and "concordantly" not in line:
                 stats["aligned_more_than_1_time"] = int(line.split()[0])
+            elif "aligned concordantly 0 times" in line:
+                stats["concordant_0_times"] = int(line.split()[0])
+            elif "aligned concordantly exactly 1 time" in line:
+                stats["concordant_exactly_1_time"] = int(line.split()[0])
+            elif "aligned concordantly >1 times" in line:
+                stats["concordant_more_than_1_time"] = int(line.split()[0])
             elif "overall alignment rate" in line:
                 rate_str = line.split("%")[0].split()[-1]
                 stats["overall_alignment_rate"] = float(rate_str)
@@ -447,27 +462,51 @@ def calculate_signal_to_noise(
     return result
 
 
-def get_baseline_parameters() -> Dict:
+def get_baseline_parameters(num_sequences: int = 1) -> Dict:
     """Get baseline parameter set (default/current settings).
+    
+    Args:
+        num_sequences: Number of reference sequences (1 = single, >1 = multiple)
     
     Returns:
         Dictionary with baseline parameters
     """
-    return {
+    base_params = {
         "local": True,
         "no_unal": True,
         "no_discordant": True,
         "no_mixed": True,
-        "seed_length": 12,
         "maxins": 1000,
+        "max_alignments": 1,  # -k 1: only report best alignment to reduce multi-mapping
     }
+    
+    if num_sequences > 1:
+        # Stricter parameters for multiple sequences to ensure best match
+        base_params.update({
+            "seed_length": 15,  # Longer seed for better specificity
+            "mismatch_penalty": "6,2",  # Stricter mismatch penalty
+            "score_min": "L,10,0.2",  # Higher score threshold to prefer better matches
+            "gap_penalty_read": "8,4",  # Stricter gap penalties
+            "gap_penalty_ref": "5,3",
+        })
+    else:
+        # More permissive for single sequence (allows mutations)
+        base_params.update({
+            "seed_length": 12,
+        })
+    
+    return base_params
 
 
-def generate_parameter_combinations(read_length: int = 150) -> List[Dict]:
+def generate_parameter_combinations(
+    read_length: int = 150, 
+    num_sequences: int = 1
+) -> List[Dict]:
     """Generate parameter combinations to test.
     
     Args:
         read_length: Expected read length (default: 150bp)
+        num_sequences: Number of reference sequences (1 = single, >1 = multiple)
         
     Returns:
         List of parameter dictionaries
@@ -480,106 +519,199 @@ def generate_parameter_combinations(read_length: int = 150) -> List[Dict]:
         "no_unal": True,
         "no_discordant": True,
         "no_mixed": True,
+        "max_alignments": 1,  # -k 1: only report best alignment to reduce multi-mapping
     }
     
-    # Parameter ranges to test
-    seed_lengths = [10, 12, 15, 20]
-    seed_mismatches = [0, 1, 2]  # -N parameter: number of mismatches allowed in seed
-    maxins_values = [200, 300, 500, 1000] if read_length <= 150 else [500, 1000, 2000]
-    score_mins = [
-        None,
-        "L,0,-0.6",
-        "L,0,-0.4",
-        "G,20,15",
-    ]
-    mismatch_penalties = [
-        None,
-        "6,2",
-        "4,2",
-    ]
+    # Different parameter ranges for single vs multiple sequences
+    if num_sequences > 1:
+        # Multiple sequences: stricter parameters for better discrimination
+        seed_lengths = [15, 18, 20]  # Longer seeds for specificity
+        seed_mismatches = [0]  # No seed mismatches for strict matching
+        maxins_values = [200, 300, 500] if read_length <= 150 else [500, 1000]
+        score_mins = [
+            "L,10,0.2",  # Higher threshold to prefer better matches
+            "L,10,0.3",
+            "G,20,15",
+        ]
+        mismatch_penalties = [
+            "6,2",  # Stricter penalties
+            "6,3",
+        ]
+        gap_penalty_reads = ["8,4", "10,5"]  # Stricter gap penalties
+        gap_penalty_refs = ["5,3", "6,4"]
+        seed_intervals = [
+            "S,1,0.5",  # More seeds for better discrimination
+            "S,1,0.75",
+            "S,1,1.0",
+        ]
+        extension_efforts = [20, 25]  # High effort to find best match
+        repetitive_efforts = [3, 4]  # High effort for similar sequences
+        sensitivity_modes = [
+            "sensitive-local",  # More sensitive for discrimination
+            "very-sensitive-local",
+        ]
+    else:
+        # Single sequence: more permissive parameters to allow mutations
+        seed_lengths = [10, 12, 15]  # Shorter seeds allow mutations
+        seed_mismatches = [0, 1]  # Allow seed mismatches for mutations
+        maxins_values = [200, 300, 500, 1000] if read_length <= 150 else [500, 1000, 2000]
+        score_mins = [
+            None,
+            "L,0,-0.6",  # Lower threshold to allow mutations
+            "L,0,-0.4",
+            "G,20,15",
+        ]
+        mismatch_penalties = [
+            None,
+            "6,2",
+            "4,2",  # Lower penalty for mutations
+        ]
+        gap_penalty_reads = [None, "8,4", "5,3"]
+        gap_penalty_refs = [None, "5,3", "4,2"]
+        seed_intervals = [
+            None,
+            "S,1,1.15",  # Default or fewer seeds for speed
+            "S,1,1.5",
+            "S,1,2.0",
+        ]
+        extension_efforts = [10, 15, 20]  # Moderate effort
+        repetitive_efforts = [2, 3]  # Moderate effort
+        sensitivity_modes = [
+            None,
+            "very-fast-local",
+            "fast-local",
+            "sensitive-local",
+        ]
     
-    # Sensitivity presets
-    sensitivity_modes = [
-        None,
-        "very-fast-local",
-        "fast-local",
-        "sensitive-local",
-        "very-sensitive-local",
-    ]
-    
-    # Generate combinations
+    # Generate combinations with new parameters
+    # Limit combinations to avoid explosion - sample strategically
     for seed_len in seed_lengths:
         for seed_mismatch in seed_mismatches:
-            for maxins in maxins_values:
-                for score_min in score_mins:
+            for maxins in maxins_values[:2]:  # Limit maxins combinations
+                for score_min in score_mins[:2]:  # Limit score_min combinations
                     for mp in mismatch_penalties:
-                        for sens_mode in sensitivity_modes[:3]:  # Limit to first 3 for speed
-                            params = base_params.copy()
-                            params["seed_length"] = seed_len
-                            params["seed_mismatches"] = seed_mismatch
-                            params["maxins"] = maxins
-                            if score_min:
-                                params["score_min"] = score_min
-                            if mp:
-                                params["mismatch_penalty"] = mp
-                            if sens_mode:
-                                params[sens_mode] = True
-                            
-                            combinations.append(params)
+                        for rdg in gap_penalty_reads[:2]:  # Limit gap penalty combinations
+                            for rfg in gap_penalty_refs[:2]:
+                                for seed_int in seed_intervals[:2]:  # Limit seed interval combinations
+                                    for ext_effort in extension_efforts[:2]:  # Limit extension effort
+                                        for rep_effort in repetitive_efforts[:2]:  # Limit repetitive effort
+                                            for sens_mode in sensitivity_modes[:2]:  # Limit sensitivity modes
+                                                params = base_params.copy()
+                                                params["seed_length"] = seed_len
+                                                params["seed_mismatches"] = seed_mismatch
+                                                params["maxins"] = maxins
+                                                if score_min:
+                                                    params["score_min"] = score_min
+                                                if mp:
+                                                    params["mismatch_penalty"] = mp
+                                                if rdg:
+                                                    params["gap_penalty_read"] = rdg
+                                                if rfg:
+                                                    params["gap_penalty_ref"] = rfg
+                                                if seed_int:
+                                                    params["seed_interval"] = seed_int
+                                                params["extension_effort"] = ext_effort
+                                                params["repetitive_effort"] = rep_effort
+                                                if sens_mode:
+                                                    params[sens_mode] = True
+                                                
+                                                combinations.append(params)
     
-    # Add some targeted combinations for 150bp reads
-    targeted = [
-        {
-            **base_params,
-            "seed_length": 10,
-            "seed_mismatches": 0,
-            "maxins": 300,
-            "mismatch_penalty": "6,2",
-            "score_min": "L,0,-0.6",
-            "fast-local": True,
-        },
-        {
-            **base_params,
-            "seed_length": 10,
-            "seed_mismatches": 1,
-            "maxins": 300,
-            "mismatch_penalty": "6,2",
-            "score_min": "L,0,-0.6",
-            "fast-local": True,
-        },
-        {
-            **base_params,
-            "seed_length": 12,
-            "seed_mismatches": 0,
-            "maxins": 300,
-            "mismatch_penalty": "6,2",
-            "score_min": "L,0,-0.6",
-        },
-        {
-            **base_params,
-            "seed_length": 12,
-            "seed_mismatches": 1,
-            "maxins": 300,
-            "mismatch_penalty": "6,2",
-            "score_min": "L,0,-0.6",
-        },
-        {
-            **base_params,
-            "seed_length": 15,
-            "seed_mismatches": 0,
-            "maxins": 500,
-            "score_min": "L,0,-0.4",
-            "sensitive-local": True,
-        },
-        {
-            **base_params,
-            "seed_length": 15,
-            "seed_mismatches": 1,
-            "maxins": 500,
-            "score_min": "L,0,-0.4",
-            "sensitive-local": True,
-        },
-    ]
+    # Add targeted combinations based on mode
+    if num_sequences > 1:
+        # Multiple sequences: strict mode for best discrimination
+        targeted = [
+            {
+                **base_params,
+                "seed_length": 18,
+                "seed_mismatches": 0,
+                "maxins": 300,
+                "mismatch_penalty": "6,2",
+                "gap_penalty_read": "8,4",
+                "gap_penalty_ref": "5,3",
+                "score_min": "L,10,0.2",
+                "seed_interval": "S,1,0.5",
+                "extension_effort": 25,
+                "repetitive_effort": 4,
+                "sensitive-local": True,
+            },
+            {
+                **base_params,
+                "seed_length": 20,
+                "seed_mismatches": 0,
+                "maxins": 300,
+                "mismatch_penalty": "6,3",
+                "gap_penalty_read": "10,5",
+                "gap_penalty_ref": "6,4",
+                "score_min": "L,10,0.3",
+                "seed_interval": "S,1,0.75",
+                "extension_effort": 25,
+                "repetitive_effort": 4,
+                "very-sensitive-local": True,
+            },
+            {
+                **base_params,
+                "seed_length": 15,
+                "seed_mismatches": 0,
+                "maxins": 200,
+                "mismatch_penalty": "6,2",
+                "gap_penalty_read": "8,4",
+                "gap_penalty_ref": "5,3",
+                "score_min": "L,10,0.2",
+                "seed_interval": "S,1,0.75",
+                "extension_effort": 20,
+                "repetitive_effort": 3,
+                "sensitive-local": True,
+            },
+        ]
+    else:
+        # Single sequence: permissive mode for mutation detection
+        targeted = [
+            {
+                **base_params,
+                "seed_length": 10,
+                "seed_mismatches": 0,
+                "maxins": 300,
+                "mismatch_penalty": "6,2",
+                "score_min": "L,0,-0.6",
+                "seed_interval": "S,1,1.5",
+                "extension_effort": 15,
+                "repetitive_effort": 2,
+                "fast-local": True,
+            },
+            {
+                **base_params,
+                "seed_length": 10,
+                "seed_mismatches": 1,
+                "maxins": 300,
+                "mismatch_penalty": "4,2",
+                "score_min": "L,0,-0.6",
+                "seed_interval": "S,1,2.0",
+                "extension_effort": 15,
+                "repetitive_effort": 2,
+                "fast-local": True,
+            },
+            {
+                **base_params,
+                "seed_length": 12,
+                "seed_mismatches": 0,
+                "maxins": 300,
+                "mismatch_penalty": "6,2",
+                "score_min": "L,0,-0.6",
+                "extension_effort": 15,
+                "repetitive_effort": 2,
+            },
+            {
+                **base_params,
+                "seed_length": 12,
+                "seed_mismatches": 1,
+                "maxins": 300,
+                "mismatch_penalty": "6,2",
+                "score_min": "L,0,-0.6",
+                "extension_effort": 15,
+                "repetitive_effort": 2,
+            },
+        ]
     
     combinations.extend(targeted)
     
@@ -607,10 +739,16 @@ def params_to_bowtie2_args(params: Dict) -> List[str]:
         "seed_length": "-L",
         "seed_mismatches": "-N",
         "maxins": "-X",
+        "max_alignments": "-k",  # Report up to N alignments per read
         "score_min": "--score-min",
         "mismatch_penalty": "--mp",
         "gap_penalty_read": "--rdg",
         "gap_penalty_ref": "--rfg",
+        "seed_interval": "-i",  # Seed interval for better discrimination
+        "extension_effort": "-D",  # Extension effort
+        "repetitive_effort": "-R",  # Repetitive seed effort
+        "best": "--best",  # Report alignments in best-to-worst order
+        "strata": "--strata",  # Only report alignments in best alignment stratum
         "very_fast_local": "--very-fast-local",
         "fast_local": "--fast-local",
         "sensitive_local": "--sensitive-local",
@@ -718,6 +856,17 @@ def main():
     # Read reference sequences
     ref_seqs = fasta_to_dict(args.fasta)
     
+    # Detect number of sequences to determine mode
+    num_sequences = len(ref_seqs)
+    print(f"\nDetected {num_sequences} reference sequence(s)")
+    if num_sequences > 1:
+        print("Using MULTIPLE-SEQUENCE mode with stricter parameters for better discrimination")
+        log.info(f"Using MULTIPLE-SEQUENCE mode ({num_sequences} sequences)")
+    else:
+        print("Using SINGLE-SEQUENCE mode with permissive parameters for mutation detection")
+        log.info("Using SINGLE-SEQUENCE mode")
+    sys.stdout.flush()
+    
     # Build index
     print("\n" + "=" * 80)
     print("Building Bowtie2 index")
@@ -736,7 +885,10 @@ def main():
     log.info("\n" + "=" * 80)
     log.info("Generating parameter combinations")
     log.info("=" * 80)
-    all_combinations = generate_parameter_combinations(args.read_length)
+    all_combinations = generate_parameter_combinations(
+        args.read_length, 
+        num_sequences=num_sequences
+    )
     
     if args.quick:
         # Select diverse subset for quick test
@@ -749,8 +901,8 @@ def main():
     sys.stdout.flush()
     log.info(f"Testing {len(combinations)} parameter combinations")
     
-    # Test baseline first
-    baseline_params = get_baseline_parameters()
+    # Test baseline first (num_sequences already detected above)
+    baseline_params = get_baseline_parameters(num_sequences=num_sequences)
     baseline_result = None
     
     print("\n" + "=" * 80)
@@ -822,12 +974,30 @@ def main():
                 f"3+ muts: {reads_3plus} ({reads_3plus_pct:.1f}%)"
             )
         
+        # Report multi-mapping statistics
+        multi_map_info = ""
+        if alignment_stats.get("is_paired_end"):
+            multi_map_count = alignment_stats.get("concordant_more_than_1_time", 0)
+            if multi_map_count > 0:
+                multi_map_pct = (multi_map_count / alignment_stats["total_reads"]) * 100
+                multi_map_info = f", Multi-mapping reads: {multi_map_count} ({multi_map_pct:.2f}%)"
+            else:
+                multi_map_info = ", Multi-mapping reads: 0 (0.00%)"
+        else:
+            multi_map_count = alignment_stats.get("aligned_more_than_1_time", 0)
+            if multi_map_count > 0:
+                multi_map_pct = (multi_map_count / alignment_stats["total_reads"]) * 100
+                multi_map_info = f", Multi-mapping reads: {multi_map_count} ({multi_map_pct:.2f}%)"
+            else:
+                multi_map_info = ", Multi-mapping reads: 0 (0.00%)"
+        
         print(
             f"  Alignment rate: {snr_metrics['alignment_rate']:.2%}, "
             f"High-quality: {snr_metrics['high_quality_rate']:.2%}, "
             f"SNR: {snr_metrics['signal_to_noise']:.2f}, "
             f"Quality score: {snr_metrics['quality_score']:.3f}"
             f"{bv_info}"
+            f"{multi_map_info}"
         )
         sys.stdout.flush()
         
@@ -918,12 +1088,30 @@ def main():
                     f"3+ muts: {reads_3plus} ({reads_3plus_pct:.1f}%)"
                 )
             
+            # Report multi-mapping statistics
+            multi_map_info = ""
+            if alignment_stats.get("is_paired_end"):
+                multi_map_count = alignment_stats.get("concordant_more_than_1_time", 0)
+                if multi_map_count > 0:
+                    multi_map_pct = (multi_map_count / alignment_stats["total_reads"]) * 100
+                    multi_map_info = f", Multi-mapping: {multi_map_count} ({multi_map_pct:.2f}%)"
+                else:
+                    multi_map_info = ", Multi-mapping: 0 (0.00%)"
+            else:
+                multi_map_count = alignment_stats.get("aligned_more_than_1_time", 0)
+                if multi_map_count > 0:
+                    multi_map_pct = (multi_map_count / alignment_stats["total_reads"]) * 100
+                    multi_map_info = f", Multi-mapping: {multi_map_count} ({multi_map_pct:.2f}%)"
+                else:
+                    multi_map_info = ", Multi-mapping: 0 (0.00%)"
+            
             print(
                 f"  Alignment rate: {snr_metrics['alignment_rate']:.2%}, "
                 f"High-quality: {snr_metrics['high_quality_rate']:.2%}, "
                 f"SNR: {snr_metrics['signal_to_noise']:.2f}, "
                 f"Quality score: {snr_metrics['quality_score']:.3f}"
                 f"{bv_info}"
+                f"{multi_map_info}"
             )
             sys.stdout.flush()
             log.info(

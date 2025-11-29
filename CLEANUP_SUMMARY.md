@@ -5,7 +5,6 @@
 ### 1. Removed Test Output Directories
 - ✅ `test_output_*` (7 directories: cpp, cpp_full, cpp_single, cpp_verbose, debug, functions, python)
 - ✅ `optimization_*test` (3 directories)
-- ✅ `case2_*test_results` (2 directories)
 - ✅ `full_optimization/` (large result directory with 3000+ files)
 - ✅ `my_optimization/` (large result directory with 1000+ files)
 - ✅ `test_new_params/`
@@ -14,9 +13,6 @@
 ### 2. Consolidated Documentation
 **Moved 13 optimization docs to `docs/optimization/`:**
 - ✅ `TOP_100_PARAMETER_ANALYSIS.md`
-- ✅ `CASE2_TEST_RESULTS.md`
-- ✅ `CASE2_BASELINE_VS_OPTIMIZED.md`
-- ✅ `CASE2_OPTIMIZATION_COMMAND.md`
 - ✅ `BEST_PARAMETERS.md`
 - ✅ `OPTIMIZATION_IMPROVEMENTS.md`
 - ✅ `OPTUNA_ENV_SETUP.md`
@@ -35,11 +31,8 @@
 - ✅ Moved `best_parameters.txt` → `docs/optimization/recommended_params/`
 - ✅ Moved `original_baseline_parameters.txt` → `docs/optimization/recommended_params/`
 - ✅ Moved test scripts → `scripts/test/`:
-  - `test_baseline_params_case2.py`
-  - `test_best_params_case2.py`
   - `test_optuna_env.py`
 - ✅ Moved example scripts → `docs/optimization/examples/`:
-  - `RUN_CASE2_OPTIMIZATION.sh`
   - `setup_optuna_env.sh`
 
 ### 4. Cleaned Up Temporary Files
@@ -82,13 +75,11 @@ docs/
 ├── optimization/                     # Optimization-specific docs
 │   ├── README.md                    # Navigation index
 │   ├── TOP_100_PARAMETER_ANALYSIS.md
-│   ├── CASE2_TEST_RESULTS.md
 │   ├── [12 other optimization docs]
 │   ├── recommended_params/          # Parameter files
 │   │   ├── best_parameters.txt
 │   │   └── original_baseline_parameters.txt
 │   └── examples/                    # Example scripts
-│       ├── RUN_CASE2_OPTIMIZATION.sh
 │       └── setup_optuna_env.sh
 └── [other workflow documentation]
 ```
@@ -100,8 +91,6 @@ scripts/
 ├── optimize_bowtie2_params_optuna.py # Bayesian optimization
 ├── analyze_top_parameters.py        # Analysis tool
 └── test/                            # Test scripts
-    ├── test_baseline_params_case2.py
-    ├── test_best_params_case2.py
     └── test_optuna_env.py
 ```
 
