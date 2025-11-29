@@ -14,19 +14,39 @@ This guide explains how to use the Apptainer/Singularity container for running B
 
 ### Prerequisites
 
-- Apptainer or Singularity installed
+- **For local Docker build**: Docker installed on your local machine
+- **For cluster build**: Apptainer or Singularity installed on cluster
 - Sufficient disk space (~3-4 GB)
-- **No sudo required**: Build script supports fakeroot or remote builds
 
 ### Build Process
 
-```bash
-# From project root
-bash scripts/optimization/build_optimization_container.sh rna-map-optimization.sif
+#### Method 1: Build Locally with Docker (Recommended)
 
-# Or specify a custom location
-bash scripts/optimization/build_optimization_container.sh /shared/containers/rna-map-optimization.sif
+Build on your local machine, then transfer to cluster:
+
+```bash
+# On your local machine (with Docker)
+bash scripts/optimization/build_with_docker.sh rna-map-optimization.sif
+
+# Transfer to cluster
+scp rna-map-optimization.sif user@cluster:/path/to/destination/
 ```
+
+**Advantages**:
+- No sudo required (Docker works without root on most systems)
+- No need for fakeroot capability
+- Can build anywhere Docker is available
+
+#### Method 2: Build on Cluster
+
+Build directly on the cluster:
+
+```bash
+# From project root on cluster
+bash scripts/optimization/build_optimization_container.sh rna-map-optimization.sif
+```
+
+**Requires**: Fakeroot capability or sudo access
 
 The build process:
 1. Creates conda environment from `environment_optuna.yml`
