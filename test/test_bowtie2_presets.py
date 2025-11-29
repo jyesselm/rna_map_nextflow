@@ -2,13 +2,8 @@
 
 import pytest
 
-from rna_map.cli.bowtie2 import (
-    build_bowtie2_args,
-    get_preset_names,
-    load_bowtie2_presets,
-    parse_bowtie2_cli_args,
-)
-from rna_map.exception import DREEMInputException
+# CLI module was removed - skip these tests
+pytestmark = pytest.mark.skip(reason="rna_map.cli module was removed in Nextflow-first restructure")
 
 
 def test_load_bowtie2_presets():

@@ -27,9 +27,8 @@ except ImportError:
     print("ERROR: Optuna is not installed. Install with: pip install optuna")
     sys.exit(1)
 
-# Add lib to path
+# Package should be installed via pip install -e src/rna_map
 PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(PROJECT_ROOT / "lib"))
 
 from rna_map.io.fasta import fasta_to_dict
 from rna_map.logger import get_logger
@@ -226,6 +225,7 @@ def generate_bit_vectors_and_analyze(
         
     Returns:
         Dictionary with bit vector metrics including signal-to-noise ratio
+        and per-construct statistics
     """
     from collections import defaultdict
     
@@ -241,6 +241,7 @@ def generate_bit_vectors_and_analyze(
         "coverage_positions": 0,
         "avg_coverage": 0.0,
         "signal_to_noise": 0.0,  # AC/GU ratio from mutation histogram
+        "constructs": {},  # Per-construct statistics
     }
     
     if not sam_file.exists():
@@ -320,6 +321,7 @@ def generate_bit_vectors_and_analyze(
         
         # Calculate signal-to-noise from mutation histograms
         # Average across all references (weighted by number of aligned reads)
+        # Also store per-construct statistics
         total_snr = 0.0
         total_weight = 0
         for ref_name, mh in mut_histos.items():
@@ -327,6 +329,14 @@ def generate_bit_vectors_and_analyze(
                 snr = mh.get_signal_to_noise()
                 total_snr += snr * mh.num_aligned
                 total_weight += mh.num_aligned
+                
+                # Store per-construct statistics
+                metrics["constructs"][ref_name] = {
+                    "aligned_reads": mh.num_aligned,
+                    "signal_to_noise": snr,
+                    "sequence_length": len(mh.ref_seq),
+                    "total_reads": mh.num_reads,
+                }
         
         if total_weight > 0:
             metrics["signal_to_noise"] = total_snr / total_weight
@@ -685,6 +695,12 @@ def objective(
         trial.set_user_attr("alignment_rate", alignment_rate)
         trial.set_user_attr("avg_mapq", avg_mapq)
         trial.set_user_attr("bv_accepted", bit_vector_metrics.get("accepted_bit_vectors", 0))
+        
+        # Store per-construct information
+        if bit_vector_metrics.get("constructs"):
+            for construct_name, construct_stats in bit_vector_metrics["constructs"].items():
+                trial.set_user_attr(f"construct_{construct_name}_aligned", construct_stats["aligned_reads"])
+                trial.set_user_attr(f"construct_{construct_name}_snr", construct_stats["signal_to_noise"])
         if optimize_threads:
             trial.set_user_attr("threads_used", trial_threads)
         
@@ -798,6 +814,13 @@ def main():
     # Read reference sequences
     ref_seqs = fasta_to_dict(args.fasta)
     
+    # Display constructs found
+    print(f"\nReference sequences (constructs) found: {len(ref_seqs)}")
+    for i, (name, seq) in enumerate(ref_seqs.items(), 1):
+        print(f"  {i}. {name} ({len(seq)} bp)")
+    print()
+    sys.stdout.flush()
+    
     # Build index
     print("Building Bowtie2 index...")
     sys.stdout.flush()
@@ -859,6 +882,40 @@ def main():
     print(f"  Alignment Rate: {best_align_rate:.2%}")
     print(f"  Avg MAPQ: {best_mapq:.1f}")
     print(f"  Bit Vectors Accepted: {best_bv}")
+    print()
+    
+    # Display per-construct statistics
+    print("Per-construct statistics:")
+    construct_found = False
+    for key, value in study.best_trial.user_attrs.items():
+        if key.startswith("construct_") and key.endswith("_aligned"):
+            construct_name = key.replace("construct_", "").replace("_aligned", "")
+            aligned = value
+            snr_key = f"construct_{construct_name}_snr"
+            snr = study.best_trial.user_attrs.get(snr_key, 0.0)
+            print(f"  {construct_name}:")
+            print(f"    Aligned reads: {aligned:,}")
+            print(f"    Signal-to-Noise (AC/GU): {snr:.2f}")
+            construct_found = True
+    if not construct_found:
+        print("  (No construct-specific data available)")
+    print()
+    
+    # Display per-construct statistics
+    print("Per-construct statistics:")
+    construct_found = False
+    for key, value in study.best_trial.user_attrs.items():
+        if key.startswith("construct_") and key.endswith("_aligned"):
+            construct_name = key.replace("construct_", "").replace("_aligned", "")
+            aligned = value
+            snr_key = f"construct_{construct_name}_snr"
+            snr = study.best_trial.user_attrs.get(snr_key, 0.0)
+            print(f"  {construct_name}:")
+            print(f"    Aligned reads: {aligned}")
+            print(f"    Signal-to-Noise (AC/GU): {snr:.2f}")
+            construct_found = True
+    if not construct_found:
+        print("  (No construct-specific data available)")
     print()
     
     # Convert best parameters to Bowtie2 arguments

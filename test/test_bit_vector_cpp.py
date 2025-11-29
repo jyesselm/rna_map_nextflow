@@ -6,17 +6,11 @@ from pathlib import Path
 from rna_map.core.config import BitVectorConfig
 from rna_map.pipeline.functions import generate_bit_vectors
 
-# Add path where C++ module might be located
+# Package should be installed via pip install -e src/rna_map
+# C++ module path for testing
 TEST_DIR = Path(__file__).parent
 PROJECT_ROOT = TEST_DIR.parent
-CPP_MODULE_PATH = PROJECT_ROOT / "cpp"
-LIB_PIPELINE_PATH = PROJECT_ROOT / "lib" / "rna_map" / "pipeline"
-
-# Add potential module paths
-if str(CPP_MODULE_PATH) not in sys.path:
-    sys.path.insert(0, str(CPP_MODULE_PATH))
-if str(LIB_PIPELINE_PATH) not in sys.path:
-    sys.path.insert(0, str(LIB_PIPELINE_PATH))
+CPP_MODULE_PATH = PROJECT_ROOT / "src" / "cpp"
 
 TEST_RESOURCES = TEST_DIR / "resources" / "case_1"
 

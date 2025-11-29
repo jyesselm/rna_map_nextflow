@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Python library tests (for lib/ modules)
+  # Python library tests (for src/rna_map/ modules)
   python-test:
     name: Python Library Tests
     runs-on: ubuntu-latest
@@ -30,13 +30,13 @@ jobs:
         run: |
           pip install pandas numpy tabulate pyyaml pytest
 
-      - name: Set PYTHONPATH and test imports
+      - name: Install rna-map package and test imports
         shell: bash -l {0}
         run: |
-          export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
-          python -c "from lib.bit_vectors import generate_bit_vectors; print('✅ lib imports work')"
-          python -c "from lib.core.config import BitVectorConfig; print('✅ lib.core imports work')"
-          python -c "from lib.analysis.statistics import merge_all_merge_mut_histo_dicts; print('✅ lib.analysis imports work')"
+          cd src/rna_map && pip install -e . && cd ../..
+          python -c "from rna_map.pipeline.functions import generate_bit_vectors; print('✅ rna_map imports work')"
+          python -c "from rna_map.core.config import BitVectorConfig; print('✅ rna_map.core imports work')"
+          python -c "from rna_map.analysis.statistics import merge_all_merge_mut_histo_dicts; print('✅ rna_map.analysis imports work')"
 
   nextflow-test:
     name: Nextflow Tests
@@ -75,16 +75,16 @@ jobs:
           which cutadapt || (echo "cutadapt missing" && exit 1)
           which trim_galore || (echo "trim_galore missing" && exit 1)
 
-      - name: Set PYTHONPATH
+      - name: Install rna-map package
         shell: bash -l {0}
         run: |
-          echo "PYTHONPATH=${PWD}/lib:${PYTHONPATH}" >> $GITHUB_ENV
+          cd src/rna_map && pip install -e . && cd ../..
 
-      - name: Verify lib/ imports
+      - name: Verify rna_map imports
         shell: bash -l {0}
         run: |
-          python -c "from lib.bit_vectors import generate_bit_vectors; print('✅ lib imports work')"
-          python -c "from lib.core.config import BitVectorConfig; print('✅ lib.core imports work')"
+          python -c "from rna_map.pipeline.functions import generate_bit_vectors; print('✅ rna_map imports work')"
+          python -c "from rna_map.core.config import BitVectorConfig; print('✅ rna_map.core imports work')"
 
       - name: Run Nextflow syntax validation
         shell: bash -l {0}

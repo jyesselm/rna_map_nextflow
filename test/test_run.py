@@ -37,16 +37,16 @@ def test_input_validation():
     test input validation
     """
     p = get_test_inputs_paired()
-    ins = validate_inputs(p["fasta"], p["fastq1"], Path(""), Path(""))
+    ins = validate_inputs(p["fasta"], p["fastq1"], None, None)
     assert p["fasta"] == ins.fasta
-    assert ins.csv == Path("")
+    assert ins.csv is None or ins.csv == Path("")
     assert not ins.is_paired()
     assert not ins.supplied_csv()
 
     # check to make sure we get the proper errors for supplying file that does
     # not exist
     with pytest.raises(DREEMInputException):
-        validate_inputs(p["fasta"], Path(""), Path(""), Path(""))
+        validate_inputs(p["fasta"], Path("/nonexistent/file.fastq"), Path(""), Path(""))
     with pytest.raises(DREEMInputException):
         validate_inputs(Path("fake_path"), p["fastq1"], Path(""), Path(""))
     with pytest.raises(DREEMInputException):

@@ -1,0 +1,142 @@
+# Bowtie2 Alignment Presets
+# These presets define common Bowtie2 argument combinations
+# Users can select a preset and optionally override individual arguments
+
+presets:
+  default:
+    description: "Default settings for standard RNA-MAP analysis"
+    args:
+      local: true
+      no_unal: true
+      no_discordant: true
+      no_mixed: true
+      maxins: 1000
+      seed_length: 12
+      threads: 16
+
+  sensitive:
+    description: "More sensitive alignment settings"
+    args:
+      local: true
+      no_unal: true
+      no_discordant: true
+      no_mixed: true
+      maxins: 1000
+      seed_length: 20
+      threads: 16
+      score_min: "G,20,15"
+
+  fast:
+    description: "Faster alignment with less sensitivity"
+    args:
+      local: true
+      no_unal: true
+      no_discordant: true
+      no_mixed: true
+      maxins: 1000
+      seed_length: 10
+      threads: 16
+      very_fast_local: true
+
+  barcoded:
+    description: "Settings optimized for barcoded libraries"
+    args:
+      local: true
+      no_unal: true
+      no_discordant: true
+      no_mixed: true
+      maxins: 1000
+      seed_length: 12
+      threads: 16
+      mismatch_penalty: "50,30"
+      gap_penalty_read: "50,30"
+      gap_penalty_ref: "50,30"
+      score_min: "G,20,15"
+
+  barcoded_large:
+    description: "Settings for large barcoded libraries"
+    args:
+      local: true
+      no_unal: true
+      no_discordant: true
+      no_mixed: true
+      maxins: 1000
+      threads: 16
+      mismatch_penalty: "50,30"
+      gap_penalty_read: "50,30"
+      gap_penalty_ref: "50,30"
+      score_min: "G,20,15"
+
+  # Mutation tracking presets (optimized for DMS-MaP)
+  mutation_single:
+    description: "Optimized for single sequence mutation tracking (~150bp, 300 cycle paired-end)"
+    args:
+      local: true
+      no_unal: true
+      no_discordant: true
+      no_mixed: true
+      maxins: 300
+      seed_length: 10
+      seed_mismatches: 1
+      threads: 16
+      mismatch_penalty: "6,2"
+      gap_penalty_read: "5,3"
+      gap_penalty_ref: "5,3"
+      score_min: "L,0,-0.6"
+
+  mutation_similar:
+    description: "For few similar sequences - reports multiple alignments for mutation tracking"
+    args:
+      local: true
+      no_unal: false
+      no_discordant: true
+      no_mixed: true
+      maxins: 300
+      seed_length: 10
+      seed_mismatches: 1
+      max_alignments: 10
+      threads: 16
+      mismatch_penalty: "6,2"
+      gap_penalty_read: "5,3"
+      gap_penalty_ref: "5,3"
+      score_min: "L,0,-0.6"
+
+  mutation_large:
+    description: "For huge libraries - faster but still sensitive for mutation detection"
+    args:
+      local: true
+      no_unal: true
+      no_discordant: true
+      no_mixed: true
+      maxins: 300
+      seed_length: 12
+      seed_mismatches: 1
+      threads: 16
+      mismatch_penalty: "6,2"
+      gap_penalty_read: "5,3"
+      gap_penalty_ref: "5,3"
+      score_min: "L,0,-0.4"
+      fast_local: true
+
+# Argument name mapping
+# Maps friendly names to Bowtie2 argument flags
+arg_mapping:
+  local: "--local"
+  end_to_end: "--end-to-end"
+  no_unal: "--no-unal"
+  no_discordant: "--no-discordant"
+  no_mixed: "--no-mixed"
+  threads: "-p"
+  maxins: "-X"
+  seed_length: "-L"
+  mismatch_penalty: "--mp"
+  gap_penalty_read: "--rdg"
+  gap_penalty_ref: "--rfg"
+  score_min: "--score-min"
+  very_fast_local: "--very-fast-local"
+  fast_local: "--fast-local"
+  sensitive_local: "--sensitive-local"
+  very_sensitive_local: "--very-sensitive-local"
+  seed_mismatches: "-N"
+  max_alignments: "-k"
+

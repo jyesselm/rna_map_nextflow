@@ -74,11 +74,27 @@ EOF
     fi
 fi
 
-# Check if conda environment exists
-if ! conda env list | grep -q "^${ENV_NAME} "; then
-    echo "ERROR: Conda environment '${ENV_NAME}' not found"
-    echo "Please run: bash ${SCRIPT_DIR}/setup_optimization_env.sh"
+# Check for container or conda environment
+CONTAINER_PATH="${CONTAINER_PATH:-}"
+USE_CONTAINER=false
+
+if [ -n "${CONTAINER_PATH}" ] && [ -f "${CONTAINER_PATH}" ]; then
+    USE_CONTAINER=true
+    echo "Using container: ${CONTAINER_PATH}"
+    
+    # Check if container command is available
+    if ! command -v apptainer &> /dev/null && ! command -v singularity &> /dev/null; then
+        echo "ERROR: Container specified but Apptainer/Singularity not found"
+        exit 1
+    fi
+elif ! conda env list | grep -q "^${ENV_NAME} "; then
+    echo "ERROR: Neither container nor conda environment '${ENV_NAME}' found"
+    echo "Please either:"
+    echo "  1. Build container: bash ${SCRIPT_DIR}/build_optimization_container.sh"
+    echo "  2. Or setup conda env: bash ${SCRIPT_DIR}/setup_optimization_env.sh"
     exit 1
+else
+    echo "Using conda environment: ${ENV_NAME}"
 fi
 
 # Find all test cases in data/
@@ -143,6 +159,15 @@ for case_name in "${TEST_CASES[@]}"; do
     job_script="${JOB_DIR}/${case_name}_optimization.sh"
     job_name="${JOB_NAME_PREFIX}_${case_name}"
     
+    # Determine container command
+    if [ "$USE_CONTAINER" = true ]; then
+        if command -v apptainer &> /dev/null; then
+            CONTAINER_CMD="apptainer"
+        else
+            CONTAINER_CMD="singularity"
+        fi
+    fi
+    
     # Build SLURM script
     cat > "${job_script}" << EOF
 #!/bin/bash
@@ -167,6 +192,35 @@ echo "Node: \$(hostname)"
 echo "=========================================="
 echo ""
 
+# Create output directory
+mkdir -p ${output_case_dir}
+
+$(if [ "$USE_CONTAINER" = true ]; then cat << CONTAINER_EOF
+# Using container: ${CONTAINER_PATH}
+CONTAINER_CMD="${CONTAINER_CMD}"
+CONTAINER_PATH="${CONTAINER_PATH}"
+
+# Mount data and results directories
+BIND_ARGS="-B ${DATA_DIR}:/data -B ${OUTPUT_DIR}:/results -B ${PROJECT_ROOT}:/work"
+
+# Run optimization inside container
+echo "Running optimization for ${case_name} in container..."
+echo "FASTA: ${fasta_file}"
+echo "FASTQ1: ${fastq1_file}"
+$( [ -n "${fastq2_file}" ] && echo "echo \"FASTQ2: ${fastq2_file}\"" )
+echo ""
+
+\${CONTAINER_CMD} exec \${BIND_ARGS} \${CONTAINER_PATH} python /work/scripts/optimize_bowtie2_params.py \\
+    --fasta /data/${case_name}/$(basename "${fasta_file}") \\
+    --fastq1 /data/${case_name}/$(basename "${fastq1_file}") \\
+    $( [ -n "${fastq2_file}" ] && echo "--fastq2 /data/${case_name}/$(basename "${fastq2_file}") \\" ) \\
+    --output-dir /results/${case_name} \\
+    --read-length ${READ_LENGTH} \\
+    --threads ${THREADS} \\
+    --mapq-cutoff ${MAPQ_CUTOFF} \\
+    --max-combinations ${MAX_COMBINATIONS}
+CONTAINER_EOF
+else cat << CONDA_EOF
 # Activate conda environment
 source \$(conda info --base)/etc/profile.d/conda.sh
 conda activate ${ENV_NAME}
@@ -174,17 +228,14 @@ conda activate ${ENV_NAME}
 # Change to project directory
 cd ${PROJECT_ROOT}
 
-# Ensure rna_map is installed
-pip install -e . --quiet
-
-# Create output directory
-mkdir -p ${output_case_dir}
+# Ensure rna_map is installed from src/rna_map
+cd src/rna_map && pip install -e . --quiet && cd ../..
 
 # Run optimization
 echo "Running optimization for ${case_name}..."
 echo "FASTA: ${fasta_file}"
 echo "FASTQ1: ${fastq1_file}"
-$( [ -n "${fastq2_file}" ] && echo "FASTQ2: ${fastq2_file}" )
+$( [ -n "${fastq2_file}" ] && echo "echo \"FASTQ2: ${fastq2_file}\"" )
 echo ""
 
 python scripts/optimize_bowtie2_params.py \\
@@ -196,6 +247,8 @@ python scripts/optimize_bowtie2_params.py \\
     --threads ${THREADS} \\
     --mapq-cutoff ${MAPQ_CUTOFF} \\
     --max-combinations ${MAX_COMBINATIONS}
+CONDA_EOF
+fi)
 
 EXIT_CODE=\$?
 

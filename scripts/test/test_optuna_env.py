@@ -7,9 +7,8 @@ This script checks that all required packages are installed and can be imported.
 import sys
 from pathlib import Path
 
-# Add lib to path (same as optimization script)
-PROJECT_ROOT = Path(__file__).parent
-sys.path.insert(0, str(PROJECT_ROOT / "lib"))
+# Package should be installed via pip install -e src/rna_map
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 
 def test_imports() -> bool:

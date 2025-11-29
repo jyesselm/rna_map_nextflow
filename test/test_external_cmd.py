@@ -6,21 +6,11 @@ import pytest
 import shutil
 from pathlib import Path
 
-from rna_map.external import (
-    does_program_exist,
-    get_bowtie2_version,
-    get_fastqc_version,
-    get_trim_galore_version,
-    get_cutadapt_version,
-    run_command,
-    run_fastqc,
-    run_trim_galore,
-    run_bowtie_build,
-    run_bowtie_alignment,
-    validate_bowtie2_args,
-)
+# External module was removed - skip these tests
+pytestmark = pytest.mark.skip(reason="rna_map.external module was removed in Nextflow-first restructure")
+
 from rna_map.exception import DREEMInputException
-from rna_map.core.inputs import Inputs
+# from rna_map.core.inputs import Inputs  # Module removed
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -50,11 +40,12 @@ def get_test_inputs_paired():
     Get the test inputs
     """
     test_data_dir = Path(TEST_DIR) / "resources" / "case_1"
-    return Inputs(
-        test_data_dir / "test.fasta",
-        test_data_dir / "test_mate1.fastq",
-        test_data_dir / "test_mate2.fastq",
-    )
+    # Return dict since Inputs class was removed
+    return {
+        "fasta": test_data_dir / "test.fasta",
+        "fastq1": test_data_dir / "test_mate1.fastq",
+        "fastq2": test_data_dir / "test_mate2.fastq",
+    }
 
 
 # tests #######################################################################
@@ -128,7 +119,7 @@ def test_run_fastqc():
     """
     setup_directories(os.getcwd())
     ins = get_test_inputs_paired()
-    run_fastqc(ins.fastq1, ins.fastq2, Path("output/Mapping_Files/"))
+    run_fastqc(ins["fastq1"], ins["fastq2"], Path("output/Mapping_Files/"))
     remove_directories(os.getcwd())
 
 
@@ -138,7 +129,7 @@ def test_run_trim_galore():
     """
     setup_directories(os.getcwd())
     ins = get_test_inputs_paired()
-    run_trim_galore(ins.fastq1, ins.fastq2, Path("output/Mapping_Files/"))
+    run_trim_galore(ins["fastq1"], ins["fastq2"], Path("output/Mapping_Files/"))
     remove_directories(os.getcwd())
 
 
@@ -148,7 +139,7 @@ def test_run_bowtie_build():
     """
     setup_directories(os.getcwd())
     ins = get_test_inputs_paired()
-    run_bowtie_build(ins.fasta, "input")
+    run_bowtie_build(ins["fasta"], "input")
     assert os.path.isfile(Path("input/test.1.bt2"))
     remove_directories(os.getcwd())
 
@@ -192,10 +183,10 @@ def test_bowtie_alignment():
     """
     setup_directories(os.getcwd())
     ins = get_test_inputs_paired()
-    run_bowtie_build(ins.fasta, "input")
+    run_bowtie_build(ins["fasta"], "input")
     args = "--local;--no-unal;--no-discordant;--no-mixed;-X 1000;-L 12;-p 16"
     run_bowtie_alignment(
-        ins.fasta, ins.fastq1, ins.fastq2, "input", "output/Mapping_Files", args
+        ins["fasta"], ins["fastq1"], ins["fastq2"], "input", "output/Mapping_Files", args
     )
     assert os.path.isfile(Path("output/Mapping_Files/aligned.sam"))
     assert os.path.getsize(Path("output/Mapping_Files/aligned.sam")) > 1000

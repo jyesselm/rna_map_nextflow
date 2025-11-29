@@ -6,7 +6,7 @@ import shutil
 import pytest
 from pathlib import Path
 from rna_map.io.fasta import fasta_to_dict
-from rna_map.parameters import get_default_params
+from rna_map.core.config import BitVectorConfig
 from rna_map.analysis.bit_vector_iterator import BitVectorIterator
 from rna_map.pipeline.bit_vector_generator import BitVectorGenerator
 
@@ -52,8 +52,16 @@ def test_bit_vector_generator():
         / "Mapping_Files"
         / "aligned.sam"
     )
-    bv_gen = BitVectorGenerator()
-    bv_gen.setup(get_default_params())
-    bv_gen.run(sam_path, fa_path, False, Path(""))
-    assert os.path.exists(Path("output/BitVector_Files/summary.csv"))
+    # Create default config
+    config = BitVectorConfig()
+    # Use the functional API instead of the class-based one
+    from rna_map.pipeline.functions import generate_bit_vectors
+    result = generate_bit_vectors(
+        sam_path=sam_path,
+        fasta=fa_path,
+        output_dir=Path("output"),
+        config=config,
+        paired=False
+    )
+    assert result.summary_path.exists()
     shutil.rmtree("output")

@@ -33,10 +33,7 @@ process RNA_MAP_BIT_VECTORS {
     def summary_only_py = summary_output_only ? "True" : "False"
     // Use conda Python if available, otherwise use system python3
     def python_cmd = System.getenv('CONDA_PREFIX') ? "${System.getenv('CONDA_PREFIX')}/bin/python3" : "python3"
-    // Get project root - use the baseDir which should point to the project root
-    def project_root = baseDir.toString()
     """
-    export PYTHONPATH="${project_root}:\${PYTHONPATH:-}"
     ${python_cmd} << 'PYTHON_SCRIPT'
     import sys
     from pathlib import Path

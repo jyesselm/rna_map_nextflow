@@ -224,27 +224,7 @@ The signal-to-noise ratio is calculated from mutation histograms:
 
 This is different from alignment-based SNR - it measures the biological signal quality, not just alignment statistics.
 
-## When to Use Each Approach
-
-### Use Optuna (`optimize_bowtie2_params_optuna.py`) when:
-- You want a **comprehensive parameter sweep** (recommended)
-- You have a large parameter space to explore
-- You want intelligent search that focuses on promising regions
-- You want visualizations of the optimization process
-- You want to resume optimization later
-
-**Recommended settings:**
-- Start with `--n-trials 100` for initial exploration
-- Increase to `--n-trials 200-300` for thorough optimization
-- Use `--storage sqlite:///study.db` to save progress
-
-### Use Grid Search (`optimize_bowtie2_params.py`) when:
-- You want to test a specific set of parameter combinations
-- You need reproducible, exhaustive testing
-- You have a small parameter space (< 100 combinations)
-- You want to compare all combinations directly
-
-## Recommendations
+### Recommendations
 
 1. **For maximum quality**: Use the "best by quality score" combination
    - Best balance of alignment rate and quality

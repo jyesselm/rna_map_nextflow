@@ -18,12 +18,11 @@ dependencies:
   - cutadapt       # adapter/quality trimming
   - trim-galore    # wrapper around cutadapt (Perl script; conda handles Perl dep)
 
-  # Python deps for lib/ (minimal set needed by Nextflow)
+  # Python deps for src/rna_map/ (minimal set needed by Nextflow)
   - pandas>=1.5
   - numpy>=1.21
   - tabulate>=0.9
   - pyyaml>=6.0
 
-  # Note: lib/ Python package should be installed separately:
-  #   export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
-  #   Or: pip install -e . (if setup.py is configured for lib/)
+  # Note: Python package should be installed separately:
+  #   cd src/rna_map && pip install -e . && cd ../..

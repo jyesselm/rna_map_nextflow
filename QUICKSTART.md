@@ -11,9 +11,9 @@ cd rna_map_nextflow
 conda env create -f environment.yml
 conda activate rna-map-nextflow
 
-# 3. Setup Python packages (required!)
-# This creates a .pth file so packages are available without PYTHONPATH
-./setup_env.sh
+# 3. Install Python package (required!)
+# This installs the package in editable mode so it's available without PYTHONPATH
+cd src/rna_map && pip install -e . && cd ../..
 ```
 
 ## Basic Usage
@@ -93,9 +93,11 @@ The cluster testing guide includes:
 
 ## Troubleshooting
 
-### PYTHONPATH not set
+### Package not found
 ```bash
-export PYTHONPATH="${PWD}/lib:${PYTHONPATH}"
+# Install the package in editable mode
+cd src/rna_map
+pip install -e .
 ```
 
 ### Java version error
@@ -115,7 +117,7 @@ conda install nextflow -c bioconda
 - `conf/` - Configuration profiles
 - `modules/` - Nextflow modules
 - `workflows/` - Subworkflows
-- `lib/` - Python library (minimal)
+- `src/rna_map/` - Python library (minimal)
 
 ## More Information
 

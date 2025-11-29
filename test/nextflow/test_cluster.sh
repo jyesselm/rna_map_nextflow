@@ -100,10 +100,10 @@ echo "Test 2: Python Package Check"
 echo "=========================================="
 echo ""
 
-if [ -d "${PROJECT_ROOT}/lib" ]; then
-    echo "✅ lib/ directory exists"
+if [ -d "${PROJECT_ROOT}/src/rna_map" ]; then
+    echo "✅ src/rna_map/ directory exists"
 else
-    echo "❌ lib/ directory not found"
+    echo "❌ src/rna_map/ directory not found"
     exit 1
 fi
 
@@ -132,7 +132,7 @@ for file in main.nf nextflow.config environment.yml; do
     fi
 done
 
-for dir in modules workflows conf lib; do
+for dir in modules workflows conf src; do
     if [ -d "$dir" ]; then
         echo "✅ $dir/ directory exists"
     else

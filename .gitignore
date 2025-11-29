@@ -17,7 +17,9 @@ var
 sdist
 develop-eggs
 .installed.cfg
-lib
+# Ignore src/* but allow src/rna_map
+src/*
+!src/rna_map
 lib64
 
 # Installer logs
@@ -103,6 +105,11 @@ case*_baseline_test_results/
 
 # Build artifacts (additional)
 bit_vector_cpp.*.so
-cpp/**/*.so
-cpp/build/
-cpp/**/build/
+src/cpp/**/*.so
+src/cpp/build/
+src/cpp/**/build/
+
+# Large test files (optimization results)
+test/bowtie2_optimization*/
+test_nextflow_output/
+test/storage_format_performance*.json

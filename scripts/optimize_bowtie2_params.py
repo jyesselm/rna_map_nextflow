@@ -17,9 +17,8 @@ from typing import Dict, List, Tuple
 import pandas as pd
 import yaml
 
-# Add lib to path
+# Package should be installed via pip install -e src/rna_map
 PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(PROJECT_ROOT / "lib"))
 
 from rna_map.io.fasta import fasta_to_dict
 from rna_map.logger import get_logger

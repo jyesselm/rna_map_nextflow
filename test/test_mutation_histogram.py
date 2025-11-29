@@ -16,12 +16,13 @@ from rna_map.analysis.statistics import (
 from rna_map.mutation_histogram import (
     get_mut_histos_from_json_file,
 )
-from rna_map.visualization.plots import (
-    plot_read_coverage,
-    plot_modified_bases,
-    plot_mutation_histogram,
-    plot_population_avg,
-)
+# Visualization module was removed - skip plot tests
+# from rna_map.visualization.plots import (
+#     plot_read_coverage,
+#     plot_modified_bases,
+#     plot_mutation_histogram,
+#     plot_population_avg,
+# )
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -128,6 +129,7 @@ def test_mutation_histogram_to_json():
     os.remove("test.json")
 
 
+@pytest.mark.skip(reason="Visualization module was removed in Nextflow-first restructure")
 def test_plot_read_coverage():
     """
     test plot_read_coverage
@@ -139,6 +141,7 @@ def test_plot_read_coverage():
     os.remove("mttr-6-alt-h3_1_134_read_coverage.html")
 
 
+@pytest.mark.skip(reason="Visualization module was removed in Nextflow-first restructure")
 def test_plot_modified_bases():
     """
     test plot_modified_bases
@@ -150,6 +153,7 @@ def test_plot_modified_bases():
     os.remove("mttr-6-alt-h3_1_134_mutations.html")
 
 
+@pytest.mark.skip(reason="Visualization module was removed in Nextflow-first restructure")
 def test_plot_mutation_histogram():
     """
     test plot_mutation_histogram
@@ -182,6 +186,7 @@ def test_get_pop_avg_dataframe():
     # popavg_filename = file_base_name + "popavg_reacts.txt"
 
 
+@pytest.mark.skip(reason="Visualization module was removed in Nextflow-first restructure")
 def test_plot_population_avg():
     """
     test plot_population_avg

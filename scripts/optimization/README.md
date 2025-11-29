@@ -4,9 +4,29 @@ This directory contains scripts for running large-scale Bowtie2 parameter optimi
 
 ## Setup
 
-### 1. Setup Conda Environment
+### Option 1: Using Container (Recommended)
 
-First, create the conda environment with all dependencies:
+Build an Apptainer/Singularity container with all dependencies:
+
+```bash
+bash scripts/optimization/build_optimization_container.sh rna-map-optimization.sif
+```
+
+This will:
+- Create a container image with all dependencies
+- Include Bowtie2, Python, Optuna, and rna_map package
+- No need to manage conda environments on compute nodes
+- Results are written to mounted directories
+
+**Usage with container:**
+```bash
+export CONTAINER_PATH=/path/to/rna-map-optimization.sif
+bash scripts/optimization/submit_optimization_jobs.sh
+```
+
+### Option 2: Using Conda Environment
+
+Alternatively, create a conda environment:
 
 ```bash
 bash scripts/optimization/setup_optimization_env.sh
@@ -15,7 +35,7 @@ bash scripts/optimization/setup_optimization_env.sh
 This will:
 - Create a conda environment named `rna-map-optimization`
 - Install Bowtie2, Python dependencies, and Optuna
-- Install the `rna_map` package in editable mode
+- Install the `rna_map` package in editable mode from `src/rna_map/`
 
 ### 2. Prepare Test Cases
 
@@ -119,6 +139,59 @@ Cancel a job:
 
 ```bash
 scancel <job_id>
+```
+
+## Collecting Results
+
+After all jobs complete, collect and aggregate the top results:
+
+### Quick Method (Recommended)
+
+```bash
+bash scripts/optimization/collect_all_results.sh
+```
+
+This automatically:
+- Activates the conda environment
+- Collects top 100 from each case
+- Saves aggregated results to `optimization_results/aggregated/`
+
+### Manual Method
+
+```bash
+# Activate environment
+conda activate rna-map-optimization
+
+# Collect top 100 from each case
+python scripts/optimization/collect_top_results.py \
+    --results-dir optimization_results \
+    --top-n 100 \
+    --output-dir optimization_results/aggregated
+```
+
+### Output Files
+
+The collection script creates:
+- `aggregated_top_results.json` - Full aggregated results with all cases
+- `combined_top_results.csv` - All top results from all cases combined
+- `top_100_overall.csv` - Top 100 combinations across all cases (sorted by quality_score)
+- `summary_statistics.json` - Summary statistics and best per case
+
+### Options
+
+- `--top-n`: Number of top results per case (default: 100)
+- `--min-quality`: Minimum quality score threshold (optional, filters results)
+- `--output-dir`: Where to save aggregated results (default: results-dir/aggregated)
+- `--results-dir`: Base directory with optimization results (default: optimization_results)
+
+### Example: Filter by Quality
+
+```bash
+# Only include results with quality_score >= 0.8
+python scripts/optimization/collect_top_results.py \
+    --results-dir optimization_results \
+    --top-n 100 \
+    --min-quality 0.8
 ```
 
 ## Per-Case Overrides

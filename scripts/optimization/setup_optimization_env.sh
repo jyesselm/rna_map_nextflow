@@ -47,7 +47,7 @@ if conda env list | grep -q "^${ENV_NAME} "; then
         echo "To activate: conda activate ${ENV_NAME}"
         echo "To update rna_map package:"
         echo "  conda activate ${ENV_NAME}"
-        echo "  cd ${PROJECT_ROOT}"
+        echo "  cd ${PROJECT_ROOT}/src/rna_map"
         echo "  pip install -e ."
         exit 0
     fi
@@ -70,8 +70,8 @@ echo ""
 echo "Installing rna_map package in editable mode..."
 echo ""
 
-# Activate environment and install rna_map
-${CONDA_CMD} run -n "${ENV_NAME}" pip install -e "${PROJECT_ROOT}"
+# Activate environment and install rna_map from src/rna_map
+${CONDA_CMD} run -n "${ENV_NAME}" bash -c "cd ${PROJECT_ROOT}/src/rna_map && pip install -e ."
 
 if [ $? -eq 0 ]; then
     echo ""
@@ -93,7 +93,7 @@ else
     echo "⚠️  rna_map installation had issues"
     echo "You can install it manually:"
     echo "  conda activate ${ENV_NAME}"
-    echo "  cd ${PROJECT_ROOT}"
+    echo "  cd ${PROJECT_ROOT}/src/rna_map"
     echo "  pip install -e ."
     echo ""
 fi

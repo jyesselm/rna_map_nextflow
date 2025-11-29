@@ -2,13 +2,8 @@
 
 import pytest
 
-from rna_map.cli.parser import (
-    normalize_bowtie2_args,
-    parse_cli_args,
-    validate_bowtie2_args_cli,
-)
-from rna_map.exception import DREEMInputException
-from rna_map.parameters import get_default_params
+# CLI module was removed - skip these tests
+pytestmark = pytest.mark.skip(reason="rna_map.cli module was removed in Nextflow-first restructure")
 
 
 def test_normalize_bowtie2_args_comma_separated():

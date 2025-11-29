@@ -9,9 +9,11 @@ import pytest
 TEST_DIR = Path(__file__).parent
 PROJECT_ROOT = TEST_DIR.parent
 
-sys.path.insert(0, str(PROJECT_ROOT / "cpp"))
-if str(PROJECT_ROOT / "lib") not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT / "lib"))
+# Package should be installed via pip install -e src/rna_map
+# C++ module path for testing
+CPP_MODULE_PATH = PROJECT_ROOT / "src" / "cpp"
+if str(CPP_MODULE_PATH) not in sys.path:
+    sys.path.insert(0, str(CPP_MODULE_PATH))
 
 TEST_RESOURCES_CASE1 = TEST_DIR / "resources" / "case_1"
 

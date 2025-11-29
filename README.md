@@ -85,11 +85,11 @@ conda env create -f environment.yml
 # Activate the environment
 conda activate rna-map-nextflow
 
-# Setup Python packages (creates .pth file so packages are available)
-./setup_env.sh
+# Install Python package (makes it available in conda environment)
+cd src/rna_map && pip install -e . && cd ../..
 ```
 
-The `lib/` directory contains the minimal Python code needed by the Nextflow workflow. The `setup_env.sh` script creates a `.pth` file in the conda environment so that `lib/` and `rna_map/` packages are automatically available without needing to set PYTHONPATH.
+The `src/rna_map/` directory contains the Python package. Install it with `pip install -e src/rna_map` to make it available in your conda environment without needing PYTHONPATH.
 
 ### Using Docker
 
@@ -134,7 +134,7 @@ See [QUICKSTART.md](QUICKSTART.md) for a quick reference guide.
 ### Basic Analysis
 
 ```bash
-# Single sample (after running ./setup_env.sh)
+# Single sample (after installing package with pip install -e src/rna_map)
 nextflow run main.nf \
     -profile local \
     --fasta reference.fasta \
@@ -275,8 +275,8 @@ This repository is structured as a **Nextflow-first** package. The Nextflow work
 conda env create -f environment.yml
 conda activate rna-map-nextflow
 
-# 2. Setup Python packages
-./setup_env.sh
+# 2. Install Python package
+cd src/rna_map && pip install -e . && cd ../..
 
 # 3. Run single sample
 nextflow run main.nf \
@@ -315,7 +315,7 @@ nextflow run main.nf -profile slurm --account myaccount --partition normal --fas
 #### Key Features
 
 - **Standard Nextflow Structure**: Follows Nextflow best practices
-- **Minimal Python Library**: Only Python code needed by the workflow (in `lib/`)
+- **Minimal Python Library**: Only Python code needed by the workflow (in `src/rna_map/`)
 - **Scalable**: Automatic parallelization on local machines or HPC clusters
 - **Reproducible**: Conda environment with all dependencies
 - **Cluster-Ready**: Pre-configured for SLURM with resource management
@@ -636,11 +636,11 @@ conda activate rna-map
 # Install in development mode
 pip install -e ".[dev]"
 
-# Setup Python packages (if not already done)
-./setup_env.sh
+# Install Python package (if not already done)
+cd src/rna_map && pip install -e . && cd ../..
 
 # Run Python tests (if you have pytest installed)
-# pytest test/  # Optional - test lib/ modules
+# pytest test/  # Optional - test src/rna_map/ modules
 
 # Run Nextflow tests
 ./test/nextflow/test_local_simple.sh  # Quick syntax validation
@@ -656,7 +656,7 @@ pip install -e ".[dev]"
 ### Continuous Integration
 
 The CI pipeline automatically runs:
-- Python library import tests (verifies lib/ modules work)
+- Python library import tests (verifies src/rna_map/ modules work)
 - Nextflow workflow validation and syntax checks
 - Bioinformatics tool verification
 
@@ -667,9 +667,9 @@ All tests must pass before merging pull requests.
 
 This project uses:
 - **Nextflow lint/fmt** for Nextflow code (Nextflow 25.04+)
-- **Ruff** for Python code formatting and linting (in lib/)
-- **MyPy** for type checking (optional, for lib/)
-- **Pytest** for testing (optional, for lib/)
+- **Ruff** for Python code formatting and linting (in src/rna_map/)
+- **MyPy** for type checking (optional, for src/rna_map/)
+- **Pytest** for testing (optional, for src/rna_map/)
 
 ## Citation
 
