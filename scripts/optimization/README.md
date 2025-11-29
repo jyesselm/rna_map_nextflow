@@ -6,6 +6,25 @@ This directory contains scripts for running large-scale Bowtie2 parameter optimi
 
 ### Option 1: Using Container (Recommended)
 
+#### Option 1a: Build Locally with Docker (Easiest - No sudo needed)
+
+Build on your local machine with Docker, then transfer to cluster:
+
+```bash
+# On your local machine (with Docker installed)
+bash scripts/optimization/build_with_docker.sh rna-map-optimization.sif
+
+# Transfer to cluster
+scp rna-map-optimization.sif user@cluster:/work/yesselmanlab/jyesselm/installs/rna_map_nextflow/
+```
+
+This will:
+- Build Docker image locally (no sudo needed for Docker)
+- Automatically convert to Apptainer format
+- Create a `.sif` file ready to transfer
+
+#### Option 1b: Build on Cluster
+
 Build an Apptainer/Singularity container with all dependencies:
 
 ```bash
