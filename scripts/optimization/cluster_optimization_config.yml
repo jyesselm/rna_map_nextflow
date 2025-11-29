@@ -23,20 +23,14 @@ optimization:
 
 # Cluster job settings
 cluster:
-  # SLURM partition to use
-  partition: "normal"
-  
   # Default time limit per job (format: HH:MM:SS)
   time: "24:00:00"
   
   # Default memory per job
-  memory: "32G"
+  memory: "16G"
   
   # Default CPUs per job
   cpus: 8
-  
-  # Account/group for SLURM
-  account: null  # Set to your account name if required
   
   # Email for job notifications (optional)
   email: null
@@ -59,5 +53,5 @@ case_overrides:
   # case_1:
   #   max_combinations: 500
   #   time: "48:00:00"
-  #   memory: "64G"
+  #   memory: "32G"
 

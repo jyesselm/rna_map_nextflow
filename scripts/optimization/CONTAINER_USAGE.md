@@ -110,9 +110,8 @@ When using the container, job scripts look like this:
 #!/bin/bash
 #SBATCH --job-name=bt2_opt_case1
 #SBATCH --time=24:00:00
-#SBATCH --partition=normal
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
+#SBATCH --mem=16G
 
 CONTAINER_PATH="/path/to/rna-map-optimization.sif"
 BIND_ARGS="-B /data:/data -B /results:/results -B /work:/work"

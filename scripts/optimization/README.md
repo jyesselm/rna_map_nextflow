@@ -64,7 +64,7 @@ data/
 Edit `scripts/optimization/cluster_optimization_config.yml` to set:
 
 - **Optimization parameters**: Number of combinations, threads, cutoffs
-- **Cluster settings**: Partition, time limits, memory, CPUs
+- **Cluster settings**: Time limits, memory, CPUs
 - **Output settings**: Base directory, whether to keep intermediates
 
 Example configuration:
@@ -77,11 +77,9 @@ optimization:
   mapq_cutoff: 20
 
 cluster:
-  partition: "normal"
   time: "24:00:00"
-  memory: "32G"
+  memory: "16G"
   cpus: 8
-  account: "your_account"  # Set if required
 ```
 
 ### 4. Submit Jobs
@@ -203,7 +201,7 @@ case_overrides:
   case_1:
     max_combinations: 500
     time: "48:00:00"
-    memory: "64G"
+    memory: "32G"
   case_2:
     max_combinations: 100
     time: "12:00:00"

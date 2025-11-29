@@ -14,11 +14,9 @@ MAX_COMBINATIONS=200
 READ_LENGTH=150
 THREADS=8
 MAPQ_CUTOFF=20
-PARTITION="normal"
 TIME="24:00:00"
-MEMORY="32G"
+MEMORY="16G"
 CPUS=8
-ACCOUNT=""
 EMAIL=""
 JOB_NAME_PREFIX="bt2_opt"
 OUTPUT_BASE_DIR="optimization_results"
@@ -61,11 +59,9 @@ print(f"MAX_COMBINATIONS={opt.get('max_combinations', 200)}")
 print(f"READ_LENGTH={opt.get('read_length', 150)}")
 print(f"THREADS={opt.get('threads', 8)}")
 print(f"MAPQ_CUTOFF={opt.get('mapq_cutoff', 20)}")
-print(f"PARTITION='{cluster.get('partition', 'normal')}'")
 print(f"TIME='{cluster.get('time', '24:00:00')}'")
-print(f"MEMORY='{cluster.get('memory', '32G')}'")
+print(f"MEMORY='{cluster.get('memory', '16G')}'")
 print(f"CPUS={cluster.get('cpus', 8)}")
-print(f"ACCOUNT='{cluster.get('account', '') or ''}'")
 print(f"EMAIL='{cluster.get('email', '') or ''}'")
 print(f"JOB_NAME_PREFIX='{cluster.get('job_name_prefix', 'bt2_opt')}'")
 print(f"OUTPUT_BASE_DIR='{output.get('base_dir', 'optimization_results')}'")
@@ -173,14 +169,12 @@ for case_name in "${TEST_CASES[@]}"; do
 #!/bin/bash
 #SBATCH --job-name=${job_name}
 #SBATCH --time=${TIME}
-#SBATCH --partition=${PARTITION}
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=${CPUS}
 #SBATCH --mem=${MEMORY}
 #SBATCH --output=${output_case_dir}/%j.out
 #SBATCH --error=${output_case_dir}/%j.err
-$( [ -n "${ACCOUNT}" ] && echo "#SBATCH --account=${ACCOUNT}" )
 $( [ -n "${EMAIL}" ] && echo "#SBATCH --mail-user=${EMAIL}" && echo "#SBATCH --mail-type=ALL" )
 
 # Print job info
