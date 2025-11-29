@@ -16,7 +16,7 @@ This guide explains how to use the Apptainer/Singularity container for running B
 
 - Apptainer or Singularity installed
 - Sufficient disk space (~3-4 GB)
-- Root access (for building) or fakeroot capability
+- **No sudo required**: Build script supports fakeroot or remote builds
 
 ### Build Process
 
@@ -35,6 +35,13 @@ The build process:
 4. Packages everything into a single `.sif` file
 
 **Build time**: ~10-20 minutes (depending on network speed)
+
+**No sudo required**: The build script automatically tries:
+1. **Fakeroot** (if you have the capability) - fastest, no network needed
+2. **Remote build** (Sylabs Cloud) - free, no login, works without root
+3. **Sudo** (only as last resort) - requires root access
+
+If you don't have sudo, the script will automatically use remote build via Sylabs Cloud.
 
 ### Verify Container
 

@@ -70,21 +70,97 @@ echo ""
 # Build the container
 cd "$PROJECT_ROOT"
 
-# Use fakeroot if available, otherwise require sudo
+# Determine build method based on available capabilities
+USE_FAKEROOT=false
+USE_REMOTE=false
+USE_SUDO=false
+
 if $CONTAINER_CMD --version | grep -q "apptainer"; then
-    # Apptainer supports --fakeroot
-    if $CONTAINER_CMD capability list | grep -q "fakeroot"; then
-        echo "Using fakeroot for unprivileged build..."
-        $CONTAINER_CMD build --fakeroot "$OUTPUT_PATH" "$DEF_FILE"
+    # Apptainer supports --fakeroot and remote builds
+    if $CONTAINER_CMD capability list 2>/dev/null | grep -q "fakeroot"; then
+        USE_FAKEROOT=true
+        echo "✓ Fakeroot capability available - will build without sudo"
+    elif command -v apptainer &> /dev/null; then
+        # Try remote build (no root required)
+        USE_REMOTE=true
+        echo "✓ Using remote build (no sudo required)"
     else
-        echo "WARNING: fakeroot not available, may require sudo"
-        echo "Building with sudo (you may be prompted for password)..."
-        sudo $CONTAINER_CMD build "$OUTPUT_PATH" "$DEF_FILE"
+        USE_SUDO=true
+        echo "⚠️  Fakeroot not available - will try sudo (may fail)"
     fi
 else
-    # Singularity - may need sudo
-    echo "Building with sudo (you may be prompted for password)..."
-    sudo $CONTAINER_CMD build "$OUTPUT_PATH" "$DEF_FILE"
+    # Singularity - older versions need sudo, newer support remote
+    if $CONTAINER_CMD remote list 2>/dev/null | grep -q "DefaultRemote"; then
+        USE_REMOTE=true
+        echo "✓ Using remote build (no sudo required)"
+    else
+        USE_SUDO=true
+        echo "⚠️  Will try sudo (may not work without root)"
+    fi
+fi
+
+# Attempt build with selected method
+BUILD_SUCCESS=false
+
+if [ "$USE_FAKEROOT" = true ]; then
+    echo "Building with fakeroot..."
+    if $CONTAINER_CMD build --fakeroot "$OUTPUT_PATH" "$DEF_FILE" 2>&1; then
+        BUILD_SUCCESS=true
+    else
+        echo "Fakeroot build failed, trying remote build..."
+        USE_REMOTE=true
+        USE_FAKEROOT=false
+    fi
+fi
+
+if [ "$USE_REMOTE" = true ] && [ "$BUILD_SUCCESS" = false ]; then
+    echo "Building with remote builder (no sudo required)..."
+    echo "This will use Sylabs Cloud or configured remote endpoint"
+    
+    # Check if remote is configured
+    if $CONTAINER_CMD remote list 2>/dev/null | grep -q "DefaultRemote"; then
+        echo "Using configured remote endpoint..."
+        if $CONTAINER_CMD build --remote "$OUTPUT_PATH" "$DEF_FILE" 2>&1; then
+            BUILD_SUCCESS=true
+        else
+            echo "Remote build failed. You may need to configure a remote:"
+            echo "  apptainer remote add --no-login SylabsCloud cloud.sycloud.io"
+            echo "  # Or use a different remote endpoint"
+        fi
+    else
+        echo "No remote configured. Setting up Sylabs Cloud (free, no login required)..."
+        if $CONTAINER_CMD remote add --no-login SylabsCloud cloud.sycloud.io 2>/dev/null; then
+            echo "Remote added. Building..."
+            if $CONTAINER_CMD build --remote "$OUTPUT_PATH" "$DEF_FILE" 2>&1; then
+                BUILD_SUCCESS=true
+            fi
+        else
+            echo "Failed to configure remote. Trying local build with sudo..."
+            USE_SUDO=true
+        fi
+    fi
+fi
+
+if [ "$USE_SUDO" = true ] && [ "$BUILD_SUCCESS" = false ]; then
+    echo "Attempting build with sudo (may require password)..."
+    if sudo $CONTAINER_CMD build "$OUTPUT_PATH" "$DEF_FILE" 2>&1; then
+        BUILD_SUCCESS=true
+    else
+        echo ""
+        echo "❌ All build methods failed!"
+        echo ""
+        echo "Options for building without sudo:"
+        echo "  1. Use fakeroot: apptainer capability add --user $USER fakeroot"
+        echo "  2. Use remote build: apptainer remote add SylabsCloud cloud.sycloud.io"
+        echo "  3. Build on a system with sudo access, then transfer the .sif file"
+        exit 1
+    fi
+fi
+
+if [ "$BUILD_SUCCESS" = false ]; then
+    echo ""
+    echo "❌ Container build failed"
+    exit 1
 fi
 
 if [ $? -eq 0 ]; then
