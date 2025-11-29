@@ -36,12 +36,29 @@ The build process:
 
 **Build time**: ~10-20 minutes (depending on network speed)
 
-**No sudo required**: The build script automatically tries:
-1. **Fakeroot** (if you have the capability) - fastest, no network needed
-2. **Remote build** (Sylabs Cloud) - free, no login, works without root
-3. **Sudo** (only as last resort) - requires root access
+**No sudo required**: The build script automatically uses fakeroot if available. If you don't have sudo access:
 
-If you don't have sudo, the script will automatically use remote build via Sylabs Cloud.
+1. **Request fakeroot capability** from your cluster admin:
+   ```bash
+   sudo apptainer capability add --user $USER fakeroot
+   ```
+   Then the build script will work without sudo.
+
+2. **Build on another system** with sudo access, then transfer the `.sif` file:
+   ```bash
+   # On a system with sudo (e.g., your local machine)
+   bash scripts/optimization/build_optimization_container.sh rna-map-optimization.sif
+   # Copy to cluster
+   scp rna-map-optimization.sif user@cluster:/path/to/destination/
+   ```
+
+3. **Use Docker** (if available) to build, then convert:
+   ```bash
+   # Build Docker image
+   docker build -f docker/Dockerfile -t rna-map-optimization .
+   # Convert to Apptainer (still needs fakeroot or sudo)
+   apptainer build rna-map-optimization.sif docker-daemon://rna-map-optimization:latest
+   ```
 
 ### Verify Container
 

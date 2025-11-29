@@ -18,10 +18,10 @@ This will:
 - No need to manage conda environments on compute nodes
 - Results are written to mounted directories
 
-**No sudo required**: The build script automatically uses fakeroot or remote builds when available. If you don't have sudo access, it will:
-1. Try fakeroot (if you have the capability)
-2. Fall back to remote build via Sylabs Cloud (free, no login)
-3. Only use sudo as a last resort
+**No sudo required**: The build script automatically uses fakeroot when available. If you don't have sudo access:
+1. **Request fakeroot capability** from your cluster admin: `sudo apptainer capability add --user $USER fakeroot`
+2. **Build on another system** with sudo access, then transfer the `.sif` file to the cluster
+3. **Use Docker** (if available) to build, then convert to Apptainer format
 
 **Usage with container:**
 ```bash
