@@ -24,13 +24,12 @@ from rna_map.mutation_histogram import (
 #     plot_population_avg,
 # )
 
-TEST_DIR = os.path.dirname(os.path.realpath(__file__))
+from conftest import TEST_DATA_DIR
 
 
 def get_example_mut_histo() -> MutationHistogram:
     pickle_path = (
-        Path(TEST_DIR)
-        / "resources"
+        TEST_DATA_DIR
         / "case_1"
         / "output"
         / "BitVector_Files"
