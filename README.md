@@ -25,6 +25,19 @@ nextflow run main.nf \
     --output_dir results
 ```
 
+### Example: Run with Test Data
+
+To test the pipeline with included test data:
+
+```bash
+nextflow run main.nf \
+    -profile local \
+    --fasta test/data/resources/case_1/test.fasta \
+    --fastq1 test/data/resources/case_1/test_mate1.fastq \
+    --fastq2 test/data/resources/case_1/test_mate2.fastq \
+    --output_dir test_output
+```
+
 For detailed instructions, see **[docs/QUICKSTART.md](docs/QUICKSTART.md)** or **[docs/SETUP.md](docs/SETUP.md)**.
 
 ## Documentation
