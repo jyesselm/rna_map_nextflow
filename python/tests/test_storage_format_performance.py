@@ -9,12 +9,10 @@ from collections import defaultdict
 
 import pytest
 
-TEST_DIR = Path(__file__).parent
-PROJECT_ROOT = TEST_DIR.parent
+from conftest import TEST_DATA_DIR, PROJECT_ROOT
 
-# Package should be installed via pip install -e src/rna_map
 # C++ module path for testing
-CPP_MODULE_PATH = PROJECT_ROOT / "src" / "cpp"
+CPP_MODULE_PATH = PROJECT_ROOT / "cpp"
 if str(CPP_MODULE_PATH) not in sys.path:
     sys.path.insert(0, str(CPP_MODULE_PATH))
 
@@ -26,9 +24,8 @@ from rna_map.io.bit_vector_storage import (
 )
 
 # Test data paths
-TEST_RESOURCES = TEST_DIR / "resources"
-FASTA_PATH_CASE1 = TEST_RESOURCES / "case_1" / "test.fasta"
-SAM_PATH_CASE1 = TEST_RESOURCES / "case_1" / "output" / "Mapping_Files" / "aligned.sam"
+FASTA_PATH_CASE1 = TEST_DATA_DIR / "case_1" / "test.fasta"
+SAM_PATH_CASE1 = TEST_DATA_DIR / "case_1" / "output" / "Mapping_Files" / "aligned.sam"
 
 
 def _read_reference_sequences(fasta_path: Path) -> dict[str, str]:

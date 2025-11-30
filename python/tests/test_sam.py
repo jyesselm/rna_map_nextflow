@@ -6,20 +6,13 @@ from pathlib import Path
 from rna_map.io.sam import SingleSamIterator
 from rna_map.io.fasta import fasta_to_dict
 
-TEST_DIR = os.path.dirname(os.path.realpath(__file__))
+from conftest import TEST_DATA_DIR
 
 
 def test_single_sam_iterator():
-    fa_path = Path(TEST_DIR) / "resources" / "case_1" / "test.fasta"
+    fa_path = TEST_DATA_DIR / "case_1" / "test.fasta"
     ref_seqs = fasta_to_dict(fa_path)
-    sam_path = os.path.join(
-        TEST_DIR,
-        "resources",
-        "case_1",
-        "output",
-        "Mapping_Files",
-        "aligned.sam",
-    )
+    sam_path = TEST_DATA_DIR / "case_1" / "output" / "Mapping_Files" / "aligned.sam"
     sam_iter = SingleSamIterator(sam_path, ref_seqs)
     read = next(sam_iter)[0]
     assert read.qname == "FS10000899:22:BPG61606-0731:1:1101:1200:1000"

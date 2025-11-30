@@ -8,14 +8,14 @@ from rna_map.io.fasta import validate_fasta_file
 from rna_map.io.fastq import validate_fastq_file
 from rna_map.exception import DREEMInputException
 
-TEST_DIR = os.path.dirname(os.path.realpath(__file__))
+from conftest import TEST_DATA_DIR
 
 
 def get_test_inputs_paired():
     """
     Get the test inputs
     """
-    test_data_dir = Path(TEST_DIR) / "resources" / "case_1"
+    test_data_dir = TEST_DATA_DIR / "case_1"
     return {
         "fasta" : test_data_dir / "test.fasta",
         "fastq1": test_data_dir / "test_mate1.fastq",
@@ -67,7 +67,7 @@ def test_fasta_checks():
 
 
 def test_fasta_checks_errors():
-    fasta_test_path = Path(TEST_DIR) / "resources" / "test_fastas"
+    fasta_test_path = TEST_DATA_DIR / "test_fastas"
     with pytest.raises(DREEMInputException) as exc_info:
         validate_fasta_file(fasta_test_path / "blank_line.fasta")
     assert (

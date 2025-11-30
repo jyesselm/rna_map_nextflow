@@ -110,7 +110,8 @@ def test_cigar_parsing_real_data():
     """Test CIGAR parsing with real test data."""
     import bit_vector_cpp
     
-    sam_path = TEST_DIR / "resources" / "case_1" / "output" / "Mapping_Files" / "aligned.sam"
+    from conftest import TEST_DATA_DIR
+    sam_path = TEST_DATA_DIR / "case_1" / "output" / "Mapping_Files" / "aligned.sam"
     
     if not sam_path.exists():
         pytest.skip(f"Test data not found: {sam_path}")

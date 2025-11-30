@@ -12,7 +12,7 @@ pytestmark = pytest.mark.skip(reason="rna_map.external module was removed in Nex
 from rna_map.exception import DREEMInputException
 # from rna_map.core.inputs import Inputs  # Module removed
 
-TEST_DIR = os.path.dirname(os.path.realpath(__file__))
+from conftest import TEST_DATA_DIR
 
 
 def setup_directories(cur_dir):
@@ -39,7 +39,7 @@ def get_test_inputs_paired():
     """
     Get the test inputs
     """
-    test_data_dir = Path(TEST_DIR) / "resources" / "case_1"
+    test_data_dir = TEST_DATA_DIR / "case_1"
     # Return dict since Inputs class was removed
     return {
         "fasta": test_data_dir / "test.fasta",

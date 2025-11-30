@@ -7,16 +7,14 @@ from pathlib import Path
 from collections import defaultdict
 import pytest
 
-TEST_DIR = Path(__file__).parent
-PROJECT_ROOT = TEST_DIR.parent
+from conftest import TEST_DATA_DIR, PROJECT_ROOT
 
-# Package should be installed via pip install -e src/rna_map
 # C++ module path for testing
-CPP_MODULE_PATH = PROJECT_ROOT / "src" / "cpp"
+CPP_MODULE_PATH = PROJECT_ROOT / "cpp"
 if str(CPP_MODULE_PATH) not in sys.path:
     sys.path.insert(0, str(CPP_MODULE_PATH))
 
-TEST_RESOURCES_CASE1 = TEST_DIR / "resources" / "case_1"
+TEST_RESOURCES_CASE1 = TEST_DATA_DIR / "case_1"
 
 # Case 1 paths
 SAM_PATH_CASE1 = TEST_RESOURCES_CASE1 / "output" / "Mapping_Files" / "aligned.sam"

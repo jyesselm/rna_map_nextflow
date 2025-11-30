@@ -6,13 +6,11 @@ from pathlib import Path
 from rna_map.core.config import BitVectorConfig
 from rna_map.pipeline.functions import generate_bit_vectors
 
-# Package should be installed via pip install -e src/rna_map
-# C++ module path for testing
-TEST_DIR = Path(__file__).parent
-PROJECT_ROOT = TEST_DIR.parent
-CPP_MODULE_PATH = PROJECT_ROOT / "src" / "cpp"
+from conftest import TEST_DATA_DIR, PROJECT_ROOT
 
-TEST_RESOURCES = TEST_DIR / "resources" / "case_1"
+# C++ module path for testing
+CPP_MODULE_PATH = PROJECT_ROOT / "cpp"
+TEST_RESOURCES = TEST_DATA_DIR / "case_1"
 
 
 def _check_cpp_available():
