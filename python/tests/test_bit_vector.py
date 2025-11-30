@@ -10,9 +10,6 @@ from rna_map.core.config import BitVectorConfig
 from rna_map.analysis.bit_vector_iterator import BitVectorIterator
 from rna_map.pipeline.bit_vector_generator import BitVectorGenerator
 from conftest import TEST_DATA_DIR
-# Test data is in test/data/resources/ (relative to project root)
-PROJECT_ROOT = Path(TEST_DIR).parent.parent
-TEST_DATA_DIR = PROJECT_ROOT / "test" / "data" / "resources"
 
 
 @pytest.mark.quick
