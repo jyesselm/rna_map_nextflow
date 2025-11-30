@@ -118,3 +118,10 @@ test/storage_format_performance*.json
 optimization/
 OPTIMIZATION_MOVED_SUMMARY.txt
 optimization/
+
+# Binary and large data files
+*.jar
+*.sam
+test/resources/**/*.fastq.gz
+test/resources/**/*.sam
+test/resources/**/output/**/*.sam
