@@ -6,12 +6,8 @@
  */
 
 process JOIN_MUTATION_HISTOS {
-    tag "${sample_id}"
+    tag "${sample_id ?: 'single_sample'}"
     label 'process_low'
-    publishDir "${params.output_dir}/${sample_id}/BitVector_Files",
-        mode: 'copy',
-        pattern: 'mutation_histos.*',
-        saveAs: { filename -> filename }
     
     input:
     tuple val(sample_id), val(mut_histo_p_str), val(mut_histo_json_str), path(fasta), val(is_paired), path(dot_bracket)
@@ -20,6 +16,11 @@ process JOIN_MUTATION_HISTOS {
     tuple val(sample_id), path("aligned.sam"), path(fasta), val(is_paired), path(dot_bracket), emit: out
     path("mutation_histos.p"), emit: pickle_file
     path("mutation_histos.json"), emit: json_file
+    
+    publishDir { sample_id ? "${params.output_dir}/${sample_id}/BitVector_Files" : "${params.output_dir}/BitVector_Files" },
+        mode: 'copy',
+        pattern: 'mutation_histos.*',
+        saveAs: { filename -> filename }
     
     script:
     """

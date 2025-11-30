@@ -11,18 +11,19 @@
  */
 
 process WORKFLOW_STATS {
-    tag "${sample_id}"
+    tag "${sample_id ?: 'single_sample'}"
     label 'process_low'
-    publishDir "${params.output_dir}/${sample_id}",
-        mode: 'copy',
-        pattern: 'workflow_stats.json',
-        saveAs: { _filename -> 'workflow_stats.json' }
     
     input:
     tuple val(sample_id), path(output_dir)
     
     output:
     path("workflow_stats.json"), emit: stats
+    
+    publishDir { sample_id ? "${params.output_dir}/${sample_id}" : "${params.output_dir}" },
+        mode: 'copy',
+        pattern: 'workflow_stats.json',
+        saveAs: { _filename -> 'workflow_stats.json' }
     
     script:
     """

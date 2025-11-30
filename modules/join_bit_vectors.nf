@@ -6,18 +6,19 @@
  */
 
 process JOIN_BIT_VECTORS {
-    tag "${sample_id}"
+    tag "${sample_id ?: 'single_sample'}"
     label 'process_low'
-    publishDir "${params.output_dir}/${sample_id}/BitVector_Files",
-        mode: 'copy',
-        pattern: '*_bitvectors.*',
-        saveAs: { filename -> filename }
     
     input:
     tuple val(sample_id), val(bitvector_files_str), path(fasta), val(is_paired), path(dot_bracket)
     
     output:
     path("*_bitvectors.*"), emit: bitvector_files
+    
+    publishDir { sample_id ? "${params.output_dir}/${sample_id}/BitVector_Files" : "${params.output_dir}/BitVector_Files" },
+        mode: 'copy',
+        pattern: '*_bitvectors.*',
+        saveAs: { filename -> filename }
     
     script:
     """

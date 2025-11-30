@@ -135,23 +135,23 @@ class BitVectorGenerator:
                 plot_population_avg(
                     df,
                     mh.name,
-                    f"{fname}pop_avg.html",
+                    f"{fname}pop_avg.png",
                     plot_sequence=self.__params["bit_vector"]["plot_sequence"],
                 )
             if self.__params["restore_org_behavior"]:
                 mod_bases_list = {k: v.tolist() for k, v in mh.mod_bases.items()}
                 plot_modified_bases(
-                    mh.get_nuc_coords(), mod_bases_list, f"{fname}mutations.html"
+                    mh.get_nuc_coords(), mod_bases_list, f"{fname}mutations.png"
                 )
                 plot_mutation_histogram(
                     mh.get_nuc_coords(),
                     mh.num_of_mutations,
-                    f"{fname}mutation_histogram.html",
+                    f"{fname}mutation_histogram.png",
                 )
                 plot_read_coverage(
                     mh.get_nuc_coords(),
                     mh.get_read_coverage(),
-                    f"{fname}read_coverage.html",
+                    f"{fname}read_coverage.png",
                 )
 
     def __generate_all_bit_vectors(self) -> None:

@@ -35,6 +35,7 @@ nextflow run main.nf \
     --fasta test/data/resources/case_1/test.fasta \
     --fastq1 test/data/resources/case_1/test_mate1.fastq \
     --fastq2 test/data/resources/case_1/test_mate2.fastq \
+    --dot_bracket test/data/resources/case_1/test.csv \
     --output_dir test_output
 ```
 

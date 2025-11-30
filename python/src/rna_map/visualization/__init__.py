@@ -1,36 +1,22 @@
-"""Visualization functions for RNA MAP (stub for testing)."""
+"""Visualization module for RNA-MAP.
 
-from typing import List, Dict, Any
+This module contains functions for plotting mutation data,
+including population averages, read coverage, and mutation histograms.
+"""
 
+from .plots import (
+    plot_modified_bases,
+    plot_mutation_histogram,
+    plot_population_avg,
+    plot_read_coverage,
+)
+from .utils import colors_for_sequence
 
-def colors_for_sequence(sequence: str) -> List[str]:
-    """Get colors for sequence visualization (stub).
-    
-    Args:
-        sequence: RNA sequence
-    
-    Returns:
-        List of color strings
-    """
-    return ["#000000"] * len(sequence)
-
-
-def plot_modified_bases(*args, **kwargs) -> None:
-    """Plot modified bases (stub)."""
-    pass
-
-
-def plot_mutation_histogram(*args, **kwargs) -> None:
-    """Plot mutation histogram (stub)."""
-    pass
-
-
-def plot_population_avg(*args, **kwargs) -> None:
-    """Plot population average (stub)."""
-    pass
-
-
-def plot_read_coverage(*args, **kwargs) -> None:
-    """Plot read coverage (stub)."""
-    pass
+__all__ = [
+    "plot_read_coverage",
+    "plot_modified_bases",
+    "plot_mutation_histogram",
+    "plot_population_avg",
+    "colors_for_sequence",
+]
 

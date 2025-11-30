@@ -6,12 +6,8 @@
  */
 
 process JOIN_SAM {
-    tag "${sample_id}"
+    tag "${sample_id ?: 'single_sample'}"
     label 'process_medium'
-    publishDir "${params.output_dir}/${sample_id}/Mapping_Files",
-        mode: 'copy',
-        pattern: 'aligned.sam',
-        saveAs: { _filename -> 'aligned.sam' }
     
     input:
     tuple val(sample_id), val(sam_files_paths), path(fasta), val(is_paired), path(dot_bracket)
@@ -21,6 +17,11 @@ process JOIN_SAM {
     
     output:
     tuple val(sample_id), path("aligned.sam"), path(fasta), val(is_paired), path(dot_bracket)
+    
+    publishDir { sample_id ? "${params.output_dir}/${sample_id}/Mapping_Files" : "${params.output_dir}/Mapping_Files" },
+        mode: 'copy',
+        pattern: 'aligned.sam',
+        saveAs: { _filename -> 'aligned.sam' }
     
     script:
     """

@@ -6,17 +6,8 @@
  */
 
 process FASTQC {
-    tag "${sample_id}"
+    tag "${sample_id ?: 'single_sample'}"
     label 'process_low'
-    
-    publishDir "${params.output_dir}/${sample_id}/Mapping_Files/fastqc",
-        mode: 'copy',
-        pattern: '*.html',
-        saveAs: { filename -> filename }
-    publishDir "${params.output_dir}/${sample_id}/Mapping_Files/fastqc",
-        mode: 'copy',
-        pattern: '*.zip',
-        saveAs: { filename -> filename }
     
     input:
     tuple val(sample_id), path(fasta), path(fastq1), path(fastq2), path(dot_bracket)
@@ -25,6 +16,15 @@ process FASTQC {
     
     output:
     tuple val(sample_id), path(fasta), path(fastq1), path(fastq2), path(dot_bracket), emit: out
+    
+    publishDir { sample_id ? "${params.output_dir}/${sample_id}/Mapping_Files/fastqc" : "${params.output_dir}/Mapping_Files/fastqc" },
+        mode: 'copy',
+        pattern: '*.html',
+        saveAs: { filename -> filename }
+    publishDir { sample_id ? "${params.output_dir}/${sample_id}/Mapping_Files/fastqc" : "${params.output_dir}/Mapping_Files/fastqc" },
+        mode: 'copy',
+        pattern: '*.zip',
+        saveAs: { filename -> filename }
     
     script:
     if (skip) {

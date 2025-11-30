@@ -44,12 +44,12 @@ workflow {
                 [sampleId, fastaFile, fastq1File, fastq2File, dotBracketFile]
             }
         : {
-            // Single sample input
+            // Single sample input - use empty sample_id to output directly to output_dir
             def fastaFile = file(params.fasta, checkIfExists: true)
             def fastq1File = file(params.fastq1, checkIfExists: true)
             def fastq2File = params.fastq2 ? file(params.fastq2, checkIfExists: true) : null
             def dotBracketFile = params.dot_bracket ? file(params.dot_bracket, checkIfExists: true) : null
-            def sampleId = fastaFile.getName().replaceAll(/\\.fasta.*/, '')
+            def sampleId = ""  // Empty for single sample - output goes directly to output_dir
             channel.fromList([[sampleId, fastaFile, fastq1File, fastq2File, dotBracketFile]])
         }()
     
@@ -76,6 +76,9 @@ workflow {
         .set { samples }
     
     // Run mapping subworkflow (with or without parallel splitting)
+    // Auto-enable plot_sequence if dot_bracket file is provided (unless explicitly set to false)
+    def plot_seq = (params.dot_bracket != null && params.plot_sequence != false) ? true : params.plot_sequence
+    
     if (params.split_fastq) {
         // Parallel processing: split → process chunks → join (bit vectors already generated)
         PARALLEL_MAPPING(
@@ -89,14 +92,15 @@ workflow {
             params.chunk_size,
             params.qscore_cutoff,
             params.map_score_cutoff,
-            params.summary_output_only
+            params.summary_output_only,
+            plot_seq
         )
         
         // Aggregate all workflow statistics at the end (parallel mode)
         // Collect from output directory (all files already published)
         PARALLEL_MAPPING.out.aligned
             .map { sample_id, _sam, _fasta, _is_paired, _dot_bracket ->
-                def output_dir = file("${params.output_dir}/${sample_id}")
+                def output_dir = sample_id ? file("${params.output_dir}/${sample_id}") : file("${params.output_dir}")
                 [sample_id, output_dir]
             }
             .set { stats_input_ch }
@@ -130,14 +134,15 @@ workflow {
             MAPPING.out.aligned,
             params.qscore_cutoff,
             params.map_score_cutoff,
-            params.summary_output_only
+            params.summary_output_only,
+            plot_seq
         )
         
         // Aggregate all workflow statistics at the end
         // Collect from output directory (all files already published)
         RNA_MAP_BIT_VECTORS.out.summary
             .map { sample_id, _summary_file ->
-                def output_dir = file("${params.output_dir}/${sample_id}")
+                def output_dir = sample_id ? file("${params.output_dir}/${sample_id}") : file("${params.output_dir}")
                 [sample_id, output_dir]
             }
             .set { stats_input_ch }
