@@ -20,37 +20,9 @@ include { WORKFLOW_STATS } from './modules/workflow_stats.nf'
 include { MAPPING } from './workflows/mapping.nf'
 include { PARALLEL_MAPPING } from './workflows/parallel_mapping.nf'
 
-// Workflow parameters
-params.fasta = null
-params.fastq1 = null
-params.fastq2 = null
-params.dot_bracket = null
-params.samples_csv = null
-params.output_dir = "results"
-params.skip_fastqc = false
-params.skip_trim_galore = false
-// Tool-specific arguments (can be overridden via config file or CLI)
-params.fastqc_args = ""  // Additional FastQC arguments (e.g., "--threads 4 --format fastq")
-params.tg_q_cutoff = 20
-params.tg_args = ""  // Additional Trim Galore arguments (e.g., "--length 20 --adapter AGATCGGAAGAGC")
-params.bt2_alignment_args = "--local;--no-unal;--no-discordant;--no-mixed;-X 1000;-L 12"
-// Bit vector parameters
-params.qscore_cutoff = 20
-params.map_score_cutoff = 20
-params.summary_output_only = false
-// General options
-params.overwrite = false
-// Resource limits
-params.max_cpus = 16
-params.max_memory = "32 GB"
-params.max_time = "24h"
-params.account = null
-params.partition = "normal"
-// Parallel processing
-params.split_fastq = false
-params.chunk_size = 1000000  // Reads per chunk (1M reads default)
-// Container options (for Singularity/Apptainer)
-params.container_path = null  // Path to Singularity/Apptainer image (.sif file)
+// Workflow parameters are defined in conf/base.config
+// All parameters can be overridden via command-line or custom config files
+// See conf/base.config for default values and documentation
 
 workflow {
     // Validate required parameters
