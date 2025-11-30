@@ -115,3 +115,6 @@ src/cpp/**/build/
 test/bowtie2_optimization*/
 test_nextflow_output/
 test/storage_format_performance*.json
+optimization/
+OPTIMIZATION_MOVED_SUMMARY.txt
+optimization/
