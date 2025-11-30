@@ -1,4 +1,24 @@
 {
-    "nextflow.telemetry.enabled": true,
-    "cmake.sourceDirectory": "/Users/jyesselman2/Library/CloudStorage/Dropbox/2_code/nextflow/rna_map_netflow/cpp"
+  // Nextflow Language Server Configuration
+  "nextflow.enableLanguageServer": true,
+  "nextflow.serverPath": "/opt/homebrew/Caskroom/miniconda/base/envs/rna-map-nextflow/bin/nextflow",
+  
+  // Java configuration for Nextflow LSP
+  "java.home": "/opt/homebrew/opt/openjdk",
+  
+  // Ensure Nextflow files are recognized
+  "files.associations": {
+    "*.nf": "nextflow"
+  },
+  
+  // Editor settings for Nextflow files
+  "[nextflow]": {
+    "editor.defaultFormatter": "nextflow.nextflow-ide",
+    "editor.formatOnSave": false,
+    "editor.tabSize": 4
+  },
+  
+  // Disable duplicate/problematic diagnostics if needed
+  "nextflow.diagnostics.enabled": true,
+  "problems.showCurrentInStatus": false
 }

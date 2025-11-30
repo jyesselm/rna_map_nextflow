@@ -45,9 +45,9 @@ echo ""
 echo "Installing rna_map package in editable mode..."
 echo ""
 
-# Activate environment and install rna_map
-cd "$PROJECT_ROOT"
-$CONDA_CMD run -n rna_map_nextflow pip install -e .
+# Activate environment and install rna_map from src/rna_map
+cd "$PROJECT_ROOT/src/rna_map"
+$CONDA_CMD run -n rna_map_nextflow python -m pip install -e .
 
 if [ $? -eq 0 ]; then
     echo ""
@@ -65,8 +65,8 @@ else
     echo "⚠️  rna_map installation had issues"
     echo "You can install it manually:"
     echo "  conda activate rna_map_nextflow"
-    echo "  cd $PROJECT_ROOT"
-    echo "  pip install -e ."
+    echo "  cd $PROJECT_ROOT/src/rna_map"
+    echo "  python -m pip install -e ."
     echo ""
 fi
 

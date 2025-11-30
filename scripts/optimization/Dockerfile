@@ -20,7 +20,7 @@ RUN /opt/conda/bin/conda env create -f /opt/environment_optuna.yml -n rna-map-op
 RUN . /opt/conda/etc/profile.d/conda.sh && \
         conda activate rna-map-optimization && \
         cd /opt/src/rna_map && \
-        pip install -e .
+        python -m pip install -e .
 
 # Clean up conda cache
 RUN /opt/conda/bin/conda clean -afy

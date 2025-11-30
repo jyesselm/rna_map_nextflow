@@ -16,7 +16,7 @@ process WORKFLOW_STATS {
     publishDir "${params.output_dir}/${sample_id}",
         mode: 'copy',
         pattern: 'workflow_stats.json',
-        saveAs: { filename -> 'workflow_stats.json' }
+        saveAs: { _filename -> 'workflow_stats.json' }
     
     input:
     tuple val(sample_id), path(output_dir)

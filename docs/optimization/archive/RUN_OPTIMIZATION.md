@@ -16,7 +16,9 @@ cd /Users/jyesselman2/Library/CloudStorage/Dropbox/2_code/nextflow/rna_map_netfl
 # Or manually:
 conda env create -f environment_optuna.yml
 conda activate rna-map-optuna
-pip install -e .
+cd src/rna_map
+python -m pip install -e .
+cd ../..
 ```
 
 ### 2. Verify the environment

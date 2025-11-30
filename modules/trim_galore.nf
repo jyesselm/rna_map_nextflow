@@ -20,7 +20,6 @@ process TRIM_GALORE {
     
     script:
     def is_paired = (fastq2 && !fastq2.toString().contains(".empty"))
-    def fastq2_arg = is_paired ? fastq2 : ""
     def is_gz = fastq1.toString().endsWith(".gz")
     def ext = is_gz ? "fq.gz" : "fq"
     def is_paired_str = is_paired ? "true" : "false"

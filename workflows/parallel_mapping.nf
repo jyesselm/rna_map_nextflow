@@ -53,9 +53,9 @@ workflow PARALLEL_MAPPING {
             [chunk_num, chunk_file, is_r1, is_gz]
         }
         .groupTuple(by: 0)  // Group by chunk number
-        .map { chunk_num, files, flags, gz_flags ->
-            def r1 = files.find { it.toString().contains("_1.fastq") || (!it.toString().contains("_2.fastq") && !it.toString().contains("_1.fastq")) }
-            def r2 = files.find { it.toString().contains("_2.fastq") }
+        .map { chunk_num, files, _flags, _gz_flags ->
+            def r1 = files.find { file -> file.toString().contains("_1.fastq") || (!file.toString().contains("_2.fastq") && !file.toString().contains("_1.fastq")) }
+            def r2 = files.find { file -> file.toString().contains("_2.fastq") }
             if (!r2) {
                 // Single-end or missing R2 - create placeholder (preserve compression)
                 def is_gz = r1.toString().endsWith(".gz")
@@ -88,7 +88,7 @@ workflow PARALLEL_MAPPING {
     // Use combine() without 'by' to create cartesian product (like cross())
     // This will pair each trimmed chunk with the index
     BOWTIE2_BUILD.out
-        .map { sample_id, fasta, idx1, idx2, idx3, idx4, idx_rev1, idx_rev2, t1, t2, db -> 
+        .map { _sample_id, _fasta, idx1, idx2, idx3, idx4, idx_rev1, idx_rev2, _t1, _t2, _db -> 
             [idx1, idx2, idx3, idx4, idx_rev1, idx_rev2]
         }
         .set { index_ch }
@@ -110,12 +110,11 @@ workflow PARALLEL_MAPPING {
     // Step 6: Join results from all chunks
     // Group by original sample_id
     RNA_MAP_BIT_VECTORS.out.summary
-        .map { chunk_id, summary ->
+        .map { chunk_id, _summary ->
             def sample_id = chunk_id.replaceAll(/^(.*)_chunk[0-9]+$/, '$1')
             [sample_id, chunk_id]
         }
         .groupTuple(by: 0)
-        .set { chunk_summaries }
     
     RNA_MAP_BIT_VECTORS.out.bitvector_files
         .map { chunk_id, bv_files ->
@@ -125,7 +124,6 @@ workflow PARALLEL_MAPPING {
             [sample_id, bv_dir]
         }
         .groupTuple(by: 0)
-        .set { chunk_bv_files }
     
     // Get metadata for joining
     BOWTIE2_ALIGN.out.aligned
@@ -137,7 +135,7 @@ workflow PARALLEL_MAPPING {
         .groupTuple(by: 0)
         .map { sample_id, sam_list, fasta_list, is_paired_list, dot_bracket_list ->
             // Convert sam_list to a string representation for passing to Python
-            def sam_list_str = sam_list.collect { it.toString() }.join(',')
+            def sam_list_str = sam_list.collect { sam_file -> sam_file.toString() }.join(',')
             [sample_id, sam_list_str, fasta_list[0], is_paired_list[0], dot_bracket_list[0]]
         }
         .set { sam_metadata }
@@ -159,10 +157,10 @@ workflow PARALLEL_MAPPING {
         }
         .groupTuple(by: 0)
         .combine(sam_metadata, by: 0)
-        .map { sample_id, mut_histo_p_list, mut_histo_json_list, sam_list, fasta, is_paired, dot_bracket ->
+        .map { sample_id, mut_histo_p_list, mut_histo_json_list, _sam_list, fasta, is_paired, dot_bracket ->
             // Convert lists to comma-separated strings
-            def mut_histo_p_str = mut_histo_p_list.collect { it.toString() }.join(',')
-            def mut_histo_json_str = mut_histo_json_list.collect { it.toString() }.join(',')
+            def mut_histo_p_str = mut_histo_p_list.collect { file -> file.toString() }.join(',')
+            def mut_histo_json_str = mut_histo_json_list.collect { file -> file.toString() }.join(',')
             [sample_id, mut_histo_p_str, mut_histo_json_str, fasta, is_paired, dot_bracket]
         }
         .set { mut_histo_input }
@@ -178,9 +176,9 @@ workflow PARALLEL_MAPPING {
         }
         .groupTuple(by: 0)
         .combine(sam_metadata, by: 0)
-        .map { sample_id, bv_files_list, sam_list, fasta, is_paired, dot_bracket ->
+        .map { sample_id, bv_files_list, _sam_list, fasta, is_paired, dot_bracket ->
             // Convert bv_files_list (list of file lists) to a flat list of file paths
-            def all_bv_files = bv_files_list.flatten().collect { it.toString() }
+            def all_bv_files = bv_files_list.flatten().collect { file -> file.toString() }
             def bv_files_str = all_bv_files.join(',')
             [sample_id, bv_files_str, fasta, is_paired, dot_bracket]
         }

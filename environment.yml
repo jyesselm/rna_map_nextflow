@@ -9,8 +9,8 @@ dependencies:
   - pip
 
   # Nextflow and Java
-  - openjdk=11  # Java 11 for Nextflow (supports Java 8-18)
-  - nextflow>=23.0.0
+  - openjdk>=17,<25  # Java 17-24 required for Nextflow 25.04+
+  - nextflow>=25.04.0  # Minimum 25.04 for lint command support
 
   # CLI tools (Bioconda/conda-forge provide recent builds)
   - bowtie2        # aligner

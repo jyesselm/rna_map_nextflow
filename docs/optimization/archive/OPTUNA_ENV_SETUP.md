@@ -29,7 +29,9 @@ conda env create -f environment_optuna.yml
 conda activate rna-map-optuna
 
 # Install the rna_map package in development mode
-pip install -e .
+cd src/rna_map
+python -m pip install -e .
+cd ../..
 ```
 
 ## Verifying the Installation
@@ -109,7 +111,7 @@ After running optimization, the output directory will contain:
 
 If you get import errors, make sure:
 1. The environment is activated: `conda activate rna-map-optuna`
-2. The package is installed: `pip install -e .`
+2. The package is installed: `cd src/rna_map && python -m pip install -e . && cd ../..`
 3. You're using the correct Python: `which python` should point to the conda environment
 
 ### Bowtie2 Not Found

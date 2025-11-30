@@ -11,7 +11,7 @@ process RNA_MAP_BIT_VECTORS {
     publishDir "${params.output_dir}/${sample_id}/BitVector_Files",
         mode: 'copy',
         pattern: 'summary.csv',
-        saveAs: { filename -> 'summary.csv' }
+        saveAs: { _filename -> 'summary.csv' }
     publishDir "${params.output_dir}/${sample_id}/BitVector_Files",
         mode: 'copy',
         pattern: 'BitVector_Files/**',

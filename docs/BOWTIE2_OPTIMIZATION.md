@@ -31,10 +31,26 @@ pip install pandas pyyaml
 ```
 
 ### For Optuna-based Optimization (Recommended)
+
+#### Using Conda (Recommended)
+```bash
+# Create conda environment from environment file
+conda env create -f environment_optuna.yml
+conda activate rna-map-optimization
+
+# Install rna_map package in editable mode
+cd src/rna_map
+python -m pip install -e .
+cd ../..
+```
+
+#### Using pip
 ```bash
 pip install optuna plotly
-# Or install from project:
-pip install -e ".[optuna]"
+# Install rna_map package in editable mode
+cd src/rna_map
+python -m pip install -e .
+cd ../..
 ```
 
 ## Basic Usage

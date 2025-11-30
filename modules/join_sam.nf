@@ -11,7 +11,7 @@ process JOIN_SAM {
     publishDir "${params.output_dir}/${sample_id}/Mapping_Files",
         mode: 'copy',
         pattern: 'aligned.sam',
-        saveAs: { filename -> 'aligned.sam' }
+        saveAs: { _filename -> 'aligned.sam' }
     
     input:
     tuple val(sample_id), val(sam_files_paths), path(fasta), val(is_paired), path(dot_bracket)

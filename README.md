@@ -86,7 +86,7 @@ conda env create -f environment.yml
 conda activate rna-map-nextflow
 
 # Install Python package (makes it available in conda environment)
-cd src/rna_map && pip install -e . && cd ../..
+cd src/rna_map && python -m pip install -e . && cd ../..
 ```
 
 The `src/rna_map/` directory contains the Python package. Install it with `pip install -e src/rna_map` to make it available in your conda environment without needing PYTHONPATH.
@@ -637,7 +637,7 @@ conda activate rna-map
 pip install -e ".[dev]"
 
 # Install Python package (if not already done)
-cd src/rna_map && pip install -e . && cd ../..
+cd src/rna_map && python -m pip install -e . && cd ../..
 
 # Run Python tests (if you have pytest installed)
 # pytest test/  # Optional - test src/rna_map/ modules
