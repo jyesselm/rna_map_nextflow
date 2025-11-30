@@ -12,7 +12,8 @@ dist
 build
 eggs
 parts
-bin
+# bin/ is now a directory for executable scripts - don't ignore it
+# bin
 var
 sdist
 develop-eggs
