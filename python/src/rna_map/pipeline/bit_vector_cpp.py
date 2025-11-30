@@ -8,7 +8,7 @@ from typing import Optional
 # The .so file might be in the same directory, so we need to import it carefully
 _module_paths = [
     Path(__file__).parent,  # Same directory as this file
-    Path(__file__).parent.parent.parent.parent / "cpp",  # Project root / cpp
+    Path(__file__).parent.parent.parent.parent.parent / "cpp",  # Project root / cpp
 ]
 for path in _module_paths:
     if path.exists() and str(path) not in sys.path:
