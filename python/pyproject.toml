@@ -24,7 +24,7 @@ optuna = ["optuna>=3.0", "plotly>=5.0"]
 pysam = ["pysam>=0.21"]
 
 [tool.setuptools]
-package-dir = {"rna_map" = "."}
+package-dir = {"" = "src"}
 packages = ["rna_map"]
 
 [tool.setuptools.package-data]
