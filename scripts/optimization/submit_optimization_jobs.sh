@@ -65,13 +65,17 @@ print(f"CPUS={cluster.get('cpus', 8)}")
 print(f"EMAIL='{cluster.get('email', '') or ''}'")
 print(f"JOB_NAME_PREFIX='{cluster.get('job_name_prefix', 'bt2_opt')}'")
 print(f"OUTPUT_BASE_DIR='{output.get('base_dir', 'optimization_results')}'")
+container_path = cluster.get('container_path')
+if container_path:
+    print(f"CONTAINER_PATH_CONFIG='{container_path}'")
 EOF
 )"
     fi
 fi
 
 # Check for container or conda environment
-CONTAINER_PATH="${CONTAINER_PATH:-}"
+# Use CONTAINER_PATH from environment if set, otherwise from config file
+CONTAINER_PATH="${CONTAINER_PATH:-${CONTAINER_PATH_CONFIG:-}}"
 USE_CONTAINER=false
 
 if [ -n "${CONTAINER_PATH}" ] && [ -f "${CONTAINER_PATH}" ]; then

@@ -37,6 +37,11 @@ cluster:
   
   # Job name prefix
   job_name_prefix: "bt2_opt"
+  
+  # Container path (Apptainer/Singularity .sif file)
+  # If set, jobs will use the container instead of conda environment
+  # Leave as null to use conda environment or set via CONTAINER_PATH env var
+  container_path: null
 
 # Output settings
 output:
