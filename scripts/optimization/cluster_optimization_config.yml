@@ -41,7 +41,7 @@ cluster:
   # Container path (Apptainer/Singularity .sif file)
   # If set, jobs will use the container instead of conda environment
   # Leave as null to use conda environment or set via CONTAINER_PATH env var
-  container_path: null
+  container_path: "/work/yesselmanlab/jyesselm/installs/rna_map_nextflow/rna-map-optimization.sif"
 
 # Output settings
 output:
