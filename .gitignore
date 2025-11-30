@@ -96,6 +96,8 @@ full_optimization/
 my_optimization/
 *_optimization_test/
 optimization_*_test/
+# Optimization module test outputs (18GB+ of test data)
+optimization/test/
 
 # Test output directories
 test_output_*/
