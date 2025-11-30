@@ -8,7 +8,8 @@ From: continuumio/miniconda3:latest
     scripts/optimization /opt/scripts/optimization
 
 %environment
-    export PATH=/opt/conda/bin:$PATH
+    # Add conda environment bin to PATH so bowtie2, python, and other tools are available
+    export PATH=/opt/conda/envs/rna-map-optimization/bin:/opt/conda/bin:$PATH
     export CONDA_DEFAULT_ENV=rna-map-optimization
 
 %post
