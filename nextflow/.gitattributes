@@ -1,7 +1,0 @@
-# Git attributes for Nextflow workflow
-*.nf text eol=lf
-*.config text eol=lf
-*.sh text eol=lf
-*.yml text eol=lf
-*.md text eol=lf
-
