@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rna-map"
+version = "1.0.0"
+description = "RNA MAP: Rapid analysis of RNA mutational profiling (MaP) experiments"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  { name = "Joe Yesselman", email = "jyesselm@unl.edu" }
+]
+dependencies = [
+    "numpy>=1.21",
+    "pandas>=1.5",
+    "pyyaml>=6.0",
+    "tabulate>=0.9",
+    "matplotlib>=3.5",
+]
+
+[project.optional-dependencies]
+cpp = ["pybind11>=2.10"]
+optuna = ["optuna>=3.0", "plotly>=5.0"]
+pysam = ["pysam>=0.21"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["rna_map"]
+
+[tool.setuptools.package-data]
+rna_map = ["**/*.yml", "**/*.txt", "**/*.csv", "**/*.json", "**/*.jar"]

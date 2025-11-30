@@ -29,6 +29,7 @@ workflow PARALLEL_MAPPING {
     qscore_cutoff
     map_score_cutoff
     summary_output_only
+    plot_sequence
     
     main:
     // Step 1: Split FASTQ files into chunks
@@ -105,7 +106,7 @@ workflow PARALLEL_MAPPING {
     
     // Step 5: Generate bit vectors on each chunk (in parallel)
     // Access the aligned output channel (not stats)
-    RNA_MAP_BIT_VECTORS(BOWTIE2_ALIGN.out.aligned, qscore_cutoff, map_score_cutoff, summary_output_only)
+    RNA_MAP_BIT_VECTORS(BOWTIE2_ALIGN.out.aligned, qscore_cutoff, map_score_cutoff, summary_output_only, plot_sequence)
     
     // Step 6: Join results from all chunks
     // Group by original sample_id

@@ -22,7 +22,7 @@ CONTAINER_PATH="${CONTAINER_PATH:-${PWD}/rna-map.sif}"
 if [ ! -f "$CONTAINER_PATH" ]; then
     echo "WARNING: Container not found at $CONTAINER_PATH"
     echo "Please build the container first:"
-    echo "  ./scripts/build_singularity.sh $CONTAINER_PATH"
+    echo "  ./bin/build_singularity.sh $CONTAINER_PATH"
     echo ""
     echo "Or set CONTAINER_PATH environment variable to point to your container"
     exit 1

@@ -20,37 +20,9 @@ include { WORKFLOW_STATS } from './modules/workflow_stats.nf'
 include { MAPPING } from './workflows/mapping.nf'
 include { PARALLEL_MAPPING } from './workflows/parallel_mapping.nf'
 
-// Workflow parameters
-params.fasta = null
-params.fastq1 = null
-params.fastq2 = null
-params.dot_bracket = null
-params.samples_csv = null
-params.output_dir = "results"
-params.skip_fastqc = false
-params.skip_trim_galore = false
-// Tool-specific arguments (can be overridden via config file or CLI)
-params.fastqc_args = ""  // Additional FastQC arguments (e.g., "--threads 4 --format fastq")
-params.tg_q_cutoff = 20
-params.tg_args = ""  // Additional Trim Galore arguments (e.g., "--length 20 --adapter AGATCGGAAGAGC")
-params.bt2_alignment_args = "--local;--no-unal;--no-discordant;--no-mixed;-X 1000;-L 12"
-// Bit vector parameters
-params.qscore_cutoff = 20
-params.map_score_cutoff = 20
-params.summary_output_only = false
-// General options
-params.overwrite = false
-// Resource limits
-params.max_cpus = 16
-params.max_memory = "32 GB"
-params.max_time = "24h"
-params.account = null
-params.partition = "normal"
-// Parallel processing
-params.split_fastq = false
-params.chunk_size = 1000000  // Reads per chunk (1M reads default)
-// Container options (for Singularity/Apptainer)
-params.container_path = null  // Path to Singularity/Apptainer image (.sif file)
+// Workflow parameters are defined in conf/base.config
+// All parameters can be overridden via command-line or custom config files
+// See conf/base.config for default values and documentation
 
 workflow {
     // Validate required parameters
@@ -72,12 +44,12 @@ workflow {
                 [sampleId, fastaFile, fastq1File, fastq2File, dotBracketFile]
             }
         : {
-            // Single sample input
+            // Single sample input - use empty sample_id to output directly to output_dir
             def fastaFile = file(params.fasta, checkIfExists: true)
             def fastq1File = file(params.fastq1, checkIfExists: true)
             def fastq2File = params.fastq2 ? file(params.fastq2, checkIfExists: true) : null
             def dotBracketFile = params.dot_bracket ? file(params.dot_bracket, checkIfExists: true) : null
-            def sampleId = fastaFile.getName().replaceAll(/\\.fasta.*/, '')
+            def sampleId = ""  // Empty for single sample - output goes directly to output_dir
             channel.fromList([[sampleId, fastaFile, fastq1File, fastq2File, dotBracketFile]])
         }()
     
@@ -104,6 +76,9 @@ workflow {
         .set { samples }
     
     // Run mapping subworkflow (with or without parallel splitting)
+    // Auto-enable plot_sequence if dot_bracket file is provided (unless explicitly set to false)
+    def plot_seq = (params.dot_bracket != null && params.plot_sequence != false) ? true : params.plot_sequence
+    
     if (params.split_fastq) {
         // Parallel processing: split → process chunks → join (bit vectors already generated)
         PARALLEL_MAPPING(
@@ -117,14 +92,15 @@ workflow {
             params.chunk_size,
             params.qscore_cutoff,
             params.map_score_cutoff,
-            params.summary_output_only
+            params.summary_output_only,
+            plot_seq
         )
         
         // Aggregate all workflow statistics at the end (parallel mode)
         // Collect from output directory (all files already published)
         PARALLEL_MAPPING.out.aligned
             .map { sample_id, _sam, _fasta, _is_paired, _dot_bracket ->
-                def output_dir = file("${params.output_dir}/${sample_id}")
+                def output_dir = sample_id ? file("${params.output_dir}/${sample_id}") : file("${params.output_dir}")
                 [sample_id, output_dir]
             }
             .set { stats_input_ch }
@@ -158,14 +134,15 @@ workflow {
             MAPPING.out.aligned,
             params.qscore_cutoff,
             params.map_score_cutoff,
-            params.summary_output_only
+            params.summary_output_only,
+            plot_seq
         )
         
         // Aggregate all workflow statistics at the end
         // Collect from output directory (all files already published)
         RNA_MAP_BIT_VECTORS.out.summary
             .map { sample_id, _summary_file ->
-                def output_dir = file("${params.output_dir}/${sample_id}")
+                def output_dir = sample_id ? file("${params.output_dir}/${sample_id}") : file("${params.output_dir}")
                 [sample_id, output_dir]
             }
             .set { stats_input_ch }

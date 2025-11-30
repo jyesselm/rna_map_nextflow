@@ -1,0 +1,14 @@
+# Python dependencies for RNA MAP package
+# Install with: pip install -r requirements.txt
+# Or use: pip install -e . (installs from pyproject.toml)
+
+# Core dependencies (also in environment.yml)
+pandas>=1.5
+numpy>=1.21
+tabulate>=0.9
+pyyaml>=6.0
+matplotlib>=3.5
+
+# Additional Python-only dependencies (if any)
+# Add here if not in environment.yml
+

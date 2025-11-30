@@ -7,16 +7,8 @@
  */
 
 process BOWTIE2_ALIGN {
-    tag "${sample_id}"
+    tag "${sample_id ?: 'single_sample'}"
     label 'process_high'
-    publishDir "${params.output_dir}/${sample_id}/Mapping_Files",
-        mode: 'copy',
-        pattern: 'aligned.sam',
-        saveAs: { _filename -> 'aligned.sam' }
-    publishDir "${params.output_dir}/${sample_id}/Mapping_Files",
-        mode: 'copy',
-        pattern: 'alignment_stats.json',
-        saveAs: { _filename -> 'alignment_stats.json' }
     
     input:
     tuple val(sample_id), path(fasta), path(index1), path(index2), path(index3), path(index4), path(index_rev1), path(index_rev2), path(trimmed_fq1), path(trimmed_fq2), path(dot_bracket)
@@ -25,6 +17,15 @@ process BOWTIE2_ALIGN {
     output:
     tuple val(sample_id), path("aligned.sam"), path(fasta), path("is_paired.txt"), path(dot_bracket), emit: aligned
     path("alignment_stats.json"), emit: stats
+    
+    publishDir { sample_id ? "${params.output_dir}/${sample_id}/Mapping_Files" : "${params.output_dir}/Mapping_Files" },
+        mode: 'copy',
+        pattern: 'aligned.sam',
+        saveAs: { _filename -> 'aligned.sam' }
+    publishDir { sample_id ? "${params.output_dir}/${sample_id}/Mapping_Files" : "${params.output_dir}/Mapping_Files" },
+        mode: 'copy',
+        pattern: 'alignment_stats.json',
+        saveAs: { _filename -> 'alignment_stats.json' }
     
     script:
     def index_name = fasta.baseName
