@@ -1,0 +1,25 @@
+Bootstrap: docker
+From: rna-map:latest
+
+%help
+    RNA MAP Nextflow Pipeline Container
+    Built from Docker image for use with Singularity/Apptainer
+
+%labels
+    Author Yesselman Lab
+    Version 0.4.1
+    Description RNA mutational profiling (MaP) analysis pipeline
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+
+%runscript
+    exec "$@"
+
+%post
+    # Additional setup if needed
+    # Most setup is done in Docker image
+    echo "RNA MAP container ready"
+

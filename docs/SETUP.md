@@ -17,7 +17,7 @@ conda activate rna-map-nextflow
 
 # 3. Install Python package (required!)
 # This installs the package in editable mode so it's available without PYTHONPATH
-cd src/rna_map && pip install -e . && cd ../..
+cd python && pip install -e . && cd ..
 ```
 
 ### Verify Installation

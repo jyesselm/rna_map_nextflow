@@ -14,7 +14,7 @@ git clone https://github.com/jyesselm/rna_map_nextflow
 cd rna_map_nextflow
 conda env create -f environment.yml
 conda activate rna-map-nextflow
-cd src/rna_map && pip install -e . && cd ../..
+cd python && pip install -e . && cd ..
 
 # 2. Run workflow
 nextflow run main.nf \
@@ -81,7 +81,7 @@ conda env create -f environment.yml
 conda activate rna-map-nextflow
 
 # Install Python package
-cd src/rna_map && pip install -e . && cd ../..
+cd python && pip install -e . && cd ..
 ```
 
 ### Verify Installation
@@ -140,7 +140,7 @@ See **[PIPELINE_GUIDE.md](docs/PIPELINE_GUIDE.md)** for detailed configuration o
 ├── modules/             # Nextflow process modules
 ├── workflows/           # Subworkflows
 ├── conf/                # Configuration profiles
-├── src/rna_map/         # Python library (minimal)
+├── python/src/rna_map/  # Python library
 ├── docs/                # Documentation
 ├── optimization/        # Optimization toolkit (self-contained)
 └── test/                # Test files and resources
@@ -174,7 +174,7 @@ This project uses:
 nextflow lint .
 
 # Validate syntax
-./scripts/validate_nextflow.sh
+./bin/validate_nextflow.sh
 ```
 
 See **[docs/SETUP.md](docs/SETUP.md)** for IDE setup and **[docs/NEXTFLOW_LINTING.md](docs/NEXTFLOW_LINTING.md)** for linting details.

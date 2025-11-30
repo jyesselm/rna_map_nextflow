@@ -19,7 +19,7 @@ ENV PATH=/opt/conda/bin:$PATH
 # Copy your source code and install your package into base
 WORKDIR /opt/rna_map
 COPY . /opt/rna_map
-RUN pip install -e . \
+RUN cd python && pip install -e . \
  && python -c "from rna_map.pipeline.functions import generate_bit_vectors; print('✅ rna_map package installed')" || true
 
 # Optional: simple sanity check (nonfatal)

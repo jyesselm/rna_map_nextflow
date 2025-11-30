@@ -62,7 +62,7 @@ echo ""
 echo "Setup:"
 echo "  conda env create -f environment.yml"
 echo "  conda activate rna-map-nextflow"
-echo "  cd src/rna_map && pip install -e . && cd ../.."
+echo "  cd python && pip install -e . && cd .."
 echo "  (No PYTHONPATH needed - package is installed in conda environment)"
 echo ""
 

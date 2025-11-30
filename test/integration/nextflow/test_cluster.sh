@@ -100,10 +100,10 @@ echo "Test 2: Python Package Check"
 echo "=========================================="
 echo ""
 
-if [ -d "${PROJECT_ROOT}/src/rna_map" ]; then
-    echo "✅ src/rna_map/ directory exists"
+if [ -d "${PROJECT_ROOT}/python/src/rna_map" ]; then
+    echo "✅ python/src/rna_map/ directory exists"
 else
-    echo "❌ src/rna_map/ directory not found"
+    echo "❌ python/src/rna_map/ directory not found"
     exit 1
 fi
 

@@ -25,4 +25,4 @@ dependencies:
   - pyyaml>=6.0
 
   # Note: Python package should be installed separately:
-  #   cd src/rna_map && pip install -e . && cd ../..
+  #   cd python && pip install -e . && cd ..

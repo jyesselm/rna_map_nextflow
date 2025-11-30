@@ -41,7 +41,7 @@ if docker images | grep -q "^rna-map"; then
 else
     echo "Local Docker image not found. Will build from Dockerfile..."
     echo "Building Docker image first..."
-    docker build -t rna-map -f docker/Dockerfile .
+    docker build -t rna-map -f containers/Dockerfile .
     IMAGE_SOURCE="docker-daemon://rna-map:latest"
 fi
 

@@ -13,7 +13,7 @@ conda activate rna-map-nextflow
 
 # 3. Install Python package (required!)
 # This installs the package in editable mode so it's available without PYTHONPATH
-cd src/rna_map && pip install -e . && cd ../..
+cd python && pip install -e . && cd ..
 ```
 
 ## Basic Usage
@@ -96,7 +96,7 @@ The cluster testing guide includes:
 ### Package not found
 ```bash
 # Install the package in editable mode
-cd src/rna_map
+cd python
 pip install -e .
 ```
 
@@ -117,7 +117,7 @@ conda install nextflow -c bioconda
 - `conf/` - Configuration profiles
 - `modules/` - Nextflow modules
 - `workflows/` - Subworkflows
-- `src/rna_map/` - Python library (minimal)
+- `python/src/rna_map/` - Python library
 
 ## More Information
 

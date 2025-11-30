@@ -17,7 +17,20 @@ var
 sdist
 develop-eggs
 .installed.cfg
-# Ignore src/* but allow src/rna_map
+# Python package
+python/__pycache__/
+python/**/__pycache__/
+python/**/*.egg-info/
+python/**/*.so
+python/build/
+python/dist/
+
+# C++ build artifacts
+cpp/build/
+cpp/**/build/
+cpp/**/*.so
+
+# Old paths (will be removed after refactoring)
 src/*
 !src/rna_map
 lib64

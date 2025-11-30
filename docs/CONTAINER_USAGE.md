@@ -20,10 +20,10 @@ First, build a Singularity/Apptainer image from the Docker image:
 
 ```bash
 # Build Singularity image
-./scripts/build_singularity.sh /path/to/rna-map.sif
+./bin/build_singularity.sh /path/to/rna-map.sif
 
 # Or specify a custom location
-./scripts/build_singularity.sh $HOME/containers/rna-map.sif
+./bin/build_singularity.sh $HOME/containers/rna-map.sif
 ```
 
 The script will:
@@ -88,7 +88,7 @@ Store the container on shared storage accessible to all compute nodes:
 
 ```bash
 # Build to shared location
-./scripts/build_singularity.sh /shared/containers/rna-map.sif
+./bin/build_singularity.sh /shared/containers/rna-map.sif
 
 # Use in workflow
 --container_path /shared/containers/rna-map.sif
@@ -105,7 +105,7 @@ Store in your home directory:
 
 ```bash
 # Build to home directory
-./scripts/build_singularity.sh $HOME/containers/rna-map.sif
+./bin/build_singularity.sh $HOME/containers/rna-map.sif
 
 # Use in workflow
 --container_path $HOME/containers/rna-map.sif
@@ -117,7 +117,7 @@ For temporary or test runs:
 
 ```bash
 # Build to scratch
-./scripts/build_singularity.sh $SCRATCH/rna-map.sif
+./bin/build_singularity.sh $SCRATCH/rna-map.sif
 
 # Use in workflow
 --container_path $SCRATCH/rna-map.sif
@@ -137,10 +137,10 @@ The `scripts/build_singularity.sh` script handles the build process:
 
 ```bash
 # Basic usage
-./scripts/build_singularity.sh rna-map.sif
+./bin/build_singularity.sh rna-map.sif
 
 # Custom location
-./scripts/build_singularity.sh /path/to/containers/rna-map.sif
+./bin/build_singularity.sh /path/to/containers/rna-map.sif
 ```
 
 **What it does**:
@@ -155,7 +155,7 @@ If you prefer to build manually:
 
 ```bash
 # 1. Build Docker image
-docker build -t rna-map -f docker/Dockerfile .
+docker build -t rna-map -f containers/Dockerfile .
 
 # 2. Convert to Singularity
 singularity build rna-map.sif docker-daemon://rna-map:latest
@@ -269,7 +269,7 @@ docker ps
 df -h
 
 # Try building Docker image first
-docker build -t rna-map -f docker/Dockerfile .
+docker build -t rna-map -f containers/Dockerfile .
 ```
 
 ## Comparison: Containers vs. Native
